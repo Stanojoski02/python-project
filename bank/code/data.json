@@ -1,0 +1,26 @@
+{
+    "Now": {
+        "password": "Korisnik",
+        "money": 650
+    },
+    "Bojan": {
+        "password": "Stanojoski",
+        "money": 600
+    },
+    "Andrej": {
+        "password": "Stanojoski",
+        "money": 14150
+    },
+    "Dzoni": {
+        "password": "pw",
+        "money": -100
+    },
+    "Pece": {
+        "password": "mece",
+        "money": 10000
+    },
+    "Ane": {
+        "password": "stanojoska trajkoska",
+        "money": 4400
+    }
+}
