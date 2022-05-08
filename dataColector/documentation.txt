@@ -1,0 +1,8 @@
+
+Data collector documentation
+A data collector is a project that collects data from web pages that it finds and writes to a CSV document. We must set it up correctly before starting the collection
+*We must first have ChromeDriver installed 
+*The path to the installed ChromeDriver should be entered in the variable path 
+*Websites to be explored should be entered in the variable url between [] comma separated 
+*In the same folder there should be a data.csv document which should initially have this value “Website url,Title,Description,Logo url,Email” 
+then the collector is ready for operation
