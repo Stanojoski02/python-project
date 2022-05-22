@@ -76,7 +76,7 @@ def cleaner(data_input, data_output):
                             gl.write(f"{j.replace('   ','')}, ")
                     gm = i
                     gl.write("\n")
-cleaner(_input, output)
+cleaner(data_input, data_output)
 
 
 
