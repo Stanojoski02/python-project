@@ -45,8 +45,8 @@ def sorter(data_input, data_out):
     except:
         print("The file that needs to sort sentences has not been found")
 
-input_file ="ne_znam.txt"
-sorted_file = "KakoEbojan.txt"
+input_file =""
+sorted_file = ""
 
 
 
