@@ -6,45 +6,35 @@ from collections import Counter
 import math
 from main import sent_tokenize
 
+
 WORD = re.compile(r"\w+")
 
-def sentence_extractor(sentances):
-    c = []
-    data = sent_tokenize(sentances)
-    for i in data:
-        a = 0
-        for j in i:
-            if j.isdigit():
-                a = 1
-        if a == 0:
-            if len(i.split()) > 1:
-                c.append(i)
-    extracted_sentance = []
-    for i in c:
-        for j in i.split("@"):
-            j = j.replace("*", "")
-            if len(j.split()) >= 2 :
-                if "_" not in j:
-                    if j[0].isalpha():
-                        j = re.sub('<[^>]+>', '', j)
-                        j = j.replace("  ", "")
-                        j = j.replace("   ", "")
-                        j = j.replace("'", "")
-                        if len(j.split()) > 1:
-                            string = ""
-                            for o in j.split():
-                                if "!" in o or "?" in o or "." in o:
-                                    o += "\n"
-                                if "<" in o or ".at" in o or ".com" in o or "@" in o or len(o) > 15:
-                                    o = ""
-                                if len(o) > 1:
-                                    string += f" {o}"
-                            if len(string.split(" ")) > 2:
 
-                                extracted_sentance.append(
-                                    f"{string.strip()}".encode("latin1").decode('charmap').replace("b'","").replace("'","")
-                                )
-    return extracted_sentance
+def sentence_extractor(string):
+    sentences_list = []
+    data = sent_tokenize(string)
+    for sentence in data:
+        txt = ""
+        sentence = re.sub('<[^>]+>', '', sentence).strip()
+        if "Von:" not in sentence and\
+                "An:" not in sentence and\
+                "From:" not in sentence and\
+                "Web:" not in sentence and\
+                len(sentence.split()) < 30:
+            for word in sentence.split():
+                if (word[0].isalpha() or word[0].isdigit()) and\
+                        ("@" not in word) and\
+                        (".com" not in word) and\
+                        ("http" not in word) and\
+                        ("www" not in word):
+                    pass
+                else:
+                    word = ""
+                txt += " {}".format(word).replace(":", "")
+        if txt and len(txt.split()) > 2:
+            print(txt.strip())
+            sentences_list.append(txt.strip())
+    return sentences_list
 
 
 def get_cosine(vec1, vec2):
@@ -74,7 +64,7 @@ def jaccard_similarity(x, y):
 
 
 def from_to_excel(input_, output_):
-    with open(input_, "r", encoding='charmap') as d:
+    with open(input_, "r", encoding='utf8') as d:
         data = d.readlines()
         index = 0
         db = pandas.DataFrame({
@@ -87,13 +77,12 @@ def from_to_excel(input_, output_):
         db = db[["email_index", "from", "to", "date_time"]]
 
         for email in data:
-            em_to = ''
             try:
                 em_to = " ".join(re.findall(r'[\w\.-]+@[\w\.-]+', email.split(",")[2])[0]).lower().replace(" ", "")
                 if "-" in em_to:
                     em_to = em_to.split("-")[1]
             except:
-                print(" ")
+                raise print(" ")
 
             if email != data[0]:
                 new_db = pandas.DataFrame({
@@ -118,7 +107,7 @@ def from_to_excel(input_, output_):
 
 
 def from_to_excel(input_, output_):
-    with open(input_, "r", encoding='charmap') as d:
+    with open(input_, "r", encoding='utf8') as d:
         data = d.readlines()
         index = 0
         db = pandas.DataFrame({
@@ -131,13 +120,14 @@ def from_to_excel(input_, output_):
         db = db[["email_index", "from", "to", "date_time"]]
 
         for email in data:
-            em_to = ''
+            em_to = ""
             try:
                 em_to = " ".join(re.findall(r'[\w\.-]+@[\w\.-]+', email.split(",")[2])[0]).lower().replace(" ", "")
                 if "-" in em_to:
                     em_to = em_to.split("-")[1]
+
             except:
-                print(" ")
+                print("bojan")
 
             if email != data[0]:
                 new_db = pandas.DataFrame({
@@ -168,6 +158,7 @@ def email_sentences_with_index(emails):
     txt = ""
     email_index = 0
     for k in emails:
+        k = " ".join(k.split('","')[4:])
         for i in sentence_extractor(k):
             if len(k) > 0:
                 txt += f"{email_index} - {i.strip()}".replace("\n", "")
@@ -181,7 +172,7 @@ def similarity_sorter(data_input, data_out):
     # similarity and shows the similarity to 3 decimal places
     group = 0
     try:
-        with open(data_input, "r", encoding='charmap') as dd:
+        with open(data_input, "r", encoding='utf8') as dd:
             data = dd.readlines()
             c = 0
             ca = []
@@ -210,10 +201,11 @@ def similarity_sorter(data_input, data_out):
                                 cosine_.append(get_cosine(text_to_vector(i), text_to_vector(j)))
                 try:
                     if len(r) >= 2:
-                        with open(data_out, "a", encoding='charmap') as d:
-                            for sas in range(len(r)):
+                        with open(data_out, "a", encoding='utf8') as d:
+                            for num in range(len(r)):
                                 d.write(
-                                    f"{group} - {numpy.round(jaccard_[sas], 3)} - {numpy.round(cosine_[sas], 3)} - {r[sas]}")
+                                    f"{group} - {numpy.round(jaccard_[num], 3)} - {numpy.round(cosine_[num], 3)} -"
+                                    f" {r[num]}")
                         group += 1
                 #         q = group
                 except:
@@ -223,7 +215,7 @@ def similarity_sorter(data_input, data_out):
 
 
 def create_table_with_sentence(input_, output_):
-    with open(input_, "r") as d:
+    with open(input_, "r", encoding='utf8') as d:
         data = d.readlines()
         db = pandas.DataFrame({
             "similarity_group": [data[0].split("-")[0]],
@@ -258,20 +250,17 @@ def create_table_with_sentence(input_, output_):
         print(db)
 
 
-def sentence_with_email_index():
+def sentence_with_email_index(input_file):
     # This function write the sentences
     # that have the index of their email into a.txt file
-    with open("emails TX.csv", "r", encoding="charmap") as d:
+    with open(input_file, "r", encoding="utf8") as d:
         data = d.readlines()
-        with open("sentence_with_email_index.txt", "w", encoding='charmap') as dd:
+        with open("sentence_with_email_index.txt", "w", encoding='utf8') as dd:
             dd.write(email_sentences_with_index(data))
 
-def final_func():
-    sentence_with_email_index()
-    similarity_sorter("sentence_with_index.txt", "sorted_sentence2.txt")
-    create_table_with_sentence("sorted_sentence2.txt", "new_t.xlsx")
-    from_to_excel("emails TX.csv", "from_to_table2.xlsx")
 
-create_table_with_sentence("sorted_sentence2.txt", "new_t.xlsx")
-
-# final_func()
+def final_function(input_file):
+    sentence_with_email_index(input_file)
+    similarity_sorter("sentence_with_email_index.txt", "sorted_sentence.txt")
+    create_table_with_sentence("sorted_sentence.txt", "table_with_sentence_and_similarity.xlsx")
+    from_to_excel(input_file, "from_to_table.xlsx")
