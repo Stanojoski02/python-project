@@ -4,7 +4,7 @@ import dateparser
 import numpy
 from collections import Counter
 import math
-from main import sent_tokenize
+from nltk.tokenize import sent_tokenize
 
 
 WORD = re.compile(r"\w+")
