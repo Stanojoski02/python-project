@@ -6,7 +6,6 @@ from collections import Counter
 import math
 from nltk.tokenize import sent_tokenize
 
-
 WORD = re.compile(r"\w+")
 
 
@@ -64,7 +63,7 @@ def jaccard_similarity(x, y):
 
 
 def from_to_excel(input_, output_):
-    with open(input_, "r", encoding='utf8') as d:
+    with open(input_, "r", encoding="charmap") as d:
         data = d.readlines()
         index = 0
         db = pandas.DataFrame({
@@ -105,7 +104,7 @@ def from_to_excel(input_, output_):
 
 
 def from_to_excel(input_, output_):
-    with open(input_, "r", encoding="utf8") as d:
+    with open(input_, "r", encoding="charmap") as d:
         data = d.readlines()
         index = 0
         db = pandas.DataFrame({
@@ -170,44 +169,40 @@ def similarity_sorter(data_input, data_out):
     # similarity and shows the similarity to 3 decimal places
     group = 0
     try:
-        with open(data_input, "r", encoding="utf8") as dd:
+        with open(data_input, "r", encoding="charmap") as dd:
             data = dd.readlines()
             c = 0
-            ca = []
+            all_sentence = []
             sentence_index = 0
-            for i in data:
+            for line in data:
                 g = 0
-                r = []
+                similarity_sentence_group = []
                 jaccard_ = []
                 cosine_ = []
-                for j in data:
-                    if jaccard_similarity(i.split("-")[1].split(), j.split("-")[1].split()) > 0.2:
+                for line_2 in data:
+                    if jaccard_similarity(line.split("-")[1].split(), line_2.split("-")[1].split()) > 0.4:
                         if g == 0:
                             c += 1
                             g += 1
-                        # print(f"{c} - {j}")
-                        if j not in r and j.split("-")[1] not in ca:
-                            # if i not in r:
-                            #     r.append(i)
+                        if line_2.split() not in similarity_sentence_group and line_2.split("-")[1] not in all_sentence:
                             samo = 0
-                            for ui in r:
-                                if ui.split() == j.split():
+                            for sentence in similarity_sentence_group:
+                                if sentence.split() == line_2.split() and line_2 in all_sentence:
                                     samo = 1
                             if samo == 0:
-                                r.append(j)
-                                ca.append(j.split("-")[1])
-                                jaccard_.append(jaccard_similarity(i.split(), j.split()))
-                                cosine_.append(get_cosine(text_to_vector(i), text_to_vector(j)))
+                                similarity_sentence_group.append(line_2)
+                                all_sentence.append(line_2.split("-")[1])
+                                jaccard_.append(jaccard_similarity(line.split(), line_2.split()))
+                                cosine_.append(get_cosine(text_to_vector(line), text_to_vector(line_2)))
                 try:
-                    if len(r) >= 2:
-                        with open(data_out, "a", encoding="utf8") as d:
-                            for num in range(len(r)):
+                    if len(similarity_sentence_group) >= 2:
+                        with open(data_out, "a", encoding="charmap") as d:
+                            for num in range(len(similarity_sentence_group)):
                                 d.write(
                                     f"{sentence_index} - {group} - {numpy.round(jaccard_[num], 3)} - {numpy.round(cosine_[num], 3)} -"
-                                    f" {r[num]}")
+                                    f" {similarity_sentence_group[num]}")
                                 sentence_index += 1
                         group += 1
-                #         q = group
                 except:
                     raise Exception
     except:
@@ -215,7 +210,7 @@ def similarity_sorter(data_input, data_out):
 
 
 def create_table_with_sentence(input_, output_):
-    with open(input_, "r", encoding="utf8") as d:
+    with open(input_, "r", encoding="charmap") as d:
         data = d.readlines()
         db = pandas.DataFrame({
             "similarity_group": [data[0].split("-")[1]],
@@ -231,7 +226,7 @@ def create_table_with_sentence(input_, output_):
         db = db[
             ["similarity_group", "sentence_index", "email_index", "jaccard_similarity", "cosine_similarity", "sentence"]
         ]
-
+        num = 0
         for sentence in data:
             if sentence != data[0]:
                 new_db = pandas.DataFrame({
@@ -245,6 +240,8 @@ def create_table_with_sentence(input_, output_):
                                                                                                               "").strip()]
                 })
                 db = pandas.concat([db, new_db], ignore_index=True, axis=0)
+                print(num)
+                num+=1
         db.to_excel(writer, sheet_name='Sheet1', startrow=1, header=False, index=False)
         worksheet = writer.sheets['Sheet1']
         (max_row, max_col) = db.shape
@@ -258,14 +255,17 @@ def create_table_with_sentence(input_, output_):
 def sentence_with_email_index(input_file):
     # This function write the sentences
     # that have the index of their email into input_file file
-    with open(input_file, "r", encoding="utf8") as d:
+    with open(input_file, "r", encoding="charmap") as d:
         data = d.readlines()
-        with open("sentence_with_email_index.txt", "w", encoding="utf8") as dd:
+        with open("sentence_with_email_index.txt", "w", encoding="charmap" ) as dd:
             dd.write(email_sentences_with_index(data))
 
 
 def final_function(input_file):
     sentence_with_email_index(input_file)
     similarity_sorter("sentence_with_email_index.txt", "sorted_sentence.txt")
-    create_table_with_sentence("sorted_sentence.txt", "table_with_sentence_and_similarity.xlsx")
+    create_table_with_sentence("sorted_sentence.txt", "table_with_sentence_and_similarity22.xlsx")
     from_to_excel(input_file, "from_to_table.xlsx")
+
+
+final_function("emails2.txt")
