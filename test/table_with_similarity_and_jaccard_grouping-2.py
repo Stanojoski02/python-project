@@ -156,15 +156,25 @@ def email_sentences_with_index(input_file):
         emails = d.readlines()
         with open("sentence_with_email_index1.txt", "a", encoding="charmap" ) as dd:
             email_index = 0
+            with open("index.txt", "r") as gr:
+                starting_email = int(gr.readlines()[0])
+                print(starting_email)
+
             for k in emails:
-                k = " ".join(k.split('","')[4:])
-                txt = ""
-                for i in sentence_extractor(k):
-                    if len(k) > 0:
-                        txt += f"{email_index} - {i.strip()}".replace("\n", "")
-                        txt += "\n"
-                email_index += 1
-                dd.write(txt)
+                if starting_email <= email_index:
+                    k = " ".join(k.split('","')[4:])
+                    txt = ""
+                    for i in sentence_extractor(k):
+                        if len(k) > 0:
+                            txt += f"{email_index} - {i.strip()}".replace("\n", "")
+                            txt += "\n"
+                    email_index += 1
+                    dd.write(txt)
+                    with open("index.txt", "w")as index:
+                        index.write(str(email_index))
+                else:
+                    print(email_index)
+                    email_index += 1
 
 
 def similarity_sorter(data_input, data_out):
@@ -174,6 +184,7 @@ def similarity_sorter(data_input, data_out):
     try:
         with open(data_input, "r", encoding="charmap") as dd:
             data = dd.readlines()
+            print(data)
             c = 0
             all_sentence = []
             group_starting_num = 0
@@ -185,15 +196,11 @@ def similarity_sorter(data_input, data_out):
                     print(group, sentence_index)
                     group = group_num
             except:
-                with open("group.txt", "w") as group_num:
-                    group_num.write(f"{group}\n{sentence_index}")
-                    group = 0
-                    sentence_index = 0
-
+                pass
             for line in data:
-                if not (group_num <= group_starting_num):
+                if group_num >= group_starting_num:
                     group_starting_num += 1
-                else:
+                elif group_num <= group_starting_num:
                     g = 0
                     similarity_sentence_group = []
                     jaccard_ = []
