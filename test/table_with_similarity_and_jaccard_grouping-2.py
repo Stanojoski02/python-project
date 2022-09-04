@@ -148,20 +148,23 @@ def from_to_excel(input_, output_):
         # print(db)
 
 
-def email_sentences_with_index(emails):
+def email_sentences_with_index(input_file):
     # This function, from a list containing email addresses,
     # divides them into a list,
     # extracts their sentences
-    txt = ""
-    email_index = 0
-    for k in emails:
-        k = " ".join(k.split('","')[4:])
-        for i in sentence_extractor(k):
-            if len(k) > 0:
-                txt += f"{email_index} - {i.strip()}".replace("\n", "")
-                txt += "\n"
-        email_index += 1
-    return txt
+    with open(input_file, "r", encoding="charmap") as d:
+        emails = d.readlines()
+        with open("sentence_with_email_index1.txt", "a", encoding="charmap" ) as dd:
+            email_index = 0
+            for k in emails:
+                k = " ".join(k.split('","')[4:])
+                txt = ""
+                for i in sentence_extractor(k):
+                    if len(k) > 0:
+                        txt += f"{email_index} - {i.strip()}".replace("\n", "")
+                        txt += "\n"
+                email_index += 1
+                dd.write(txt)
 
 
 def similarity_sorter(data_input, data_out):
@@ -290,7 +293,7 @@ def sentence_with_email_index(input_file):
 
 
 def final_function(input_file):
-    sentence_with_email_index(input_file)
+    email_sentences_with_index(input_file)
     similarity_sorter("sentence_with_email_index1.txt", "sorted_sentence.txt")
     create_table_with_sentence("sorted_sentence.txt", "table_with_sentence_and_similarity22.xlsx")
     from_to_excel(input_file, "from_to_table.xlsx")
