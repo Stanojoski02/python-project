@@ -133,7 +133,7 @@ def grouping_sentences(_input, _output):
                         writer.write(sentence)
 
 
-def grouping_sentences_in_group(input_, output_):
+def grouping_sentences_in_excel(input_, output_):
     with open(input_, "r", encoding="charmap") as d:
         sentences = d.readlines()
         print(sentences[0].split(",")[1])
@@ -186,7 +186,7 @@ def grouping_sentences_in_group(input_, output_):
 def final_function(_input, _output):
     sentence_formatting(_input, "file.txt")
     grouping_sentences("file.txt", "sentence_in_groups.txt")
-    grouping_sentences_in_group("sentence_in_groups.txt",_output)
+    grouping_sentences_in_excel("sentence_in_groups.txt",_output)
     
 final_function("ex3.csv", "new.xlsx")
 
