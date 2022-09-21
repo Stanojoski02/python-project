@@ -2,6 +2,9 @@ import spacy
 from nltk.tokenize import sent_tokenize
 import string
 import re
+import pandas
+import xlsxwriter
+
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -16,7 +19,6 @@ def jaccard_similarity(x, y):
     intersection_cardinality = len(set.intersection(*[set(x), set(y)]))
     union_cardinality = len(set.union(*[set(x), set(y)]))
     return intersection_cardinality / float(union_cardinality)
-
 
 
 def Cleaning(text):
@@ -131,6 +133,60 @@ def grouping_sentences(_input, _output):
                         writer.write(sentence)
 
 
+def grouping_sentences_in_group(input_, output_):
+    with open(input_, "r", encoding="charmap") as d:
+        sentences = d.readlines()
+        print(sentences[0].split(",")[1])
+        db = pandas.DataFrame({
+            "similarity": [sentences[0].split(",")[0]],
+            "date": [sentences[0].split(",")[1].replace('"', "").replace("DateTime:", "")],
+            "from": [sentences[0].split(",")[2].replace('"', "").replace("From:", "")],
+            "to": [sentences[0].split(",")[3].replace('"', "").replace("To:", "")],
+            "sentence": [sentences[0].split(",")[4].replace("Sentence:", "").strip()],
+            "propn": [sentences[0].split(",")[5].replace("PROPN:", "")],
+            "verb": [sentences[0].split(",")[6].replace("VERB:", "")],
+            "adj": [sentences[0].split(",")[7].replace("ADJ:", "")],
+            "noun": [sentences[0].split(",")[8].replace("NOUN:", "")]
+
+        })
+        writer = pandas.ExcelWriter(output_, engine='xlsxwriter')
+        db = db[
+            ["similarity", "date", "from",
+             "to", "sentence", "propn", "verb", "adj", "noun"]
+        ]
+        num = 0
+        for sentence in sentences:
+            try:
+                new_db = pandas.DataFrame({
+                    "similarity": [sentence.split(",")[0]],
+                    "date": [sentence.split(",")[1].replace('"', "").replace("DateTime:", "")],
+                    "from": [sentence.split(",")[2].replace('"', "").replace("From:", "")],
+                    "to": [sentence.split(",")[3].replace('"', "").replace("To:", "")],
+                    "sentence": [sentence.split(",")[4].replace("Sentence:", "").strip()],
+                    "propn": [sentence.split(",")[5].replace("PROPN:", "")],
+                    "verb": [sentence.split(",")[6].replace("VERB:", "")],
+                    "adj": [sentence.split(",")[7].replace("ADJ:", "")],
+                    "noun": [sentence.split(",")[8].replace("NOUN:", "")]
+
+                })
+                db = pandas.concat([db, new_db], ignore_index=True, axis=0)
+                print(num)
+                num += 1
+            except:
+                pass
+        db.to_excel(writer, sheet_name='Sheet1', startrow=1, header=False, index=False)
+        worksheet = writer.sheets['Sheet1']
+        (max_row, max_col) = db.shape
+        column_settings = [{'header': column} for column in db.columns]
+        worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
+        worksheet.set_column(0, max_col - 1, 12)
+        writer.save()
+
+
 def final_function(_input, _output):
     sentence_formatting(_input, "file.txt")
-    grouping_sentences("file.txt", _output)
+    grouping_sentences("file.txt", "sentence_in_groups.txt")
+    grouping_sentences_in_group("sentence_in_groups.txt",_output)
+    
+final_function("ex3.csv", "new.xlsx")
+
