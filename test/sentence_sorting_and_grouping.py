@@ -5,7 +5,6 @@ import re
 import pandas
 import xlsxwriter
 
-
 nlp = spacy.load("en_core_web_sm")
 
 
@@ -137,11 +136,19 @@ def grouping_sentences_in_excel(input_, output_):
     with open(input_, "r", encoding="charmap") as d:
         sentences = d.readlines()
         print(sentences[0].split(",")[1])
+        emails = []
+        emails.append(sentences[0].split(",")[2].replace('"', "").replace("From:", "").replace('"', "").strip())
+        emails.append(sentences[0].split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip())
         db = pandas.DataFrame({
             "similarity": [sentences[0].split(",")[0]],
-            "date": [sentences[0].split(",")[1].replace('"', "").replace("DateTime:", "")],
-            "from": [sentences[0].split(",")[2].replace('"', "").replace("From:", "")],
-            "to": [sentences[0].split(",")[3].replace('"', "").replace("To:", "")],
+            "date":
+                [sentences[0].split(",")[1].replace('"', "").replace("DateTime:", "")],
+            "from": [
+                emails.index(sentences[0].split(",")[2].replace('"', "").replace("From:", "").replace('"', "").strip())
+            ],
+            "to": [
+                emails.index(sentences[0].split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip())
+            ],
             "sentence": [sentences[0].split(",")[4].replace("Sentence:", "").strip()],
             "propn": [sentences[0].split(",")[5].replace("PROPN:", "")],
             "verb": [sentences[0].split(",")[6].replace("VERB:", "")],
@@ -157,21 +164,40 @@ def grouping_sentences_in_excel(input_, output_):
         num = 0
         for sentence in sentences:
             try:
-                new_db = pandas.DataFrame({
-                    "similarity": [sentence.split(",")[0]],
-                    "date": [sentence.split(",")[1].replace('"', "").replace("DateTime:", "")],
-                    "from": [sentence.split(",")[2].replace('"', "").replace("From:", "")],
-                    "to": [sentence.split(",")[3].replace('"', "").replace("To:", "")],
-                    "sentence": [sentence.split(",")[4].replace("Sentence:", "").strip()],
-                    "propn": [sentence.split(",")[5].replace("PROPN:", "")],
-                    "verb": [sentence.split(",")[6].replace("VERB:", "")],
-                    "adj": [sentence.split(",")[7].replace("ADJ:", "")],
-                    "noun": [sentence.split(",")[8].replace("NOUN:", "")]
+                if sentences[0] != sentence:
+                    if sentence.split(",")[2].replace('"', "").replace("From:", "").replace('"', '').strip() not\
+                            in emails:
+                        emails.append(
+                            sentence.split(",")[2].replace('"', "").replace("From:", "").replace('"', '').strip()
+                        )
+                    if sentence.split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip() not\
+                            in emails:
+                        emails.append(
+                            sentence.split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip()
+                        )
+                    new_db = pandas.DataFrame({
+                        "similarity": [sentence.split(",")[0]],
+                        "date": [sentence.split(",")[1].replace('"', "").replace("DateTime:", "")],
+                        "from": [
+                            emails.index(
+                                sentence.split(",")[2].replace('"', "").replace("From:", "").replace('"', '').strip()
+                            )
+                        ],
+                        "to": [
+                            emails.index(
+                                sentence.split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip()
+                            )
+                        ],
+                        "sentence": [sentence.split(",")[4].replace("Sentence:", "").strip()],
+                        "propn": [sentence.split(",")[5].replace("PROPN:", "")],
+                        "verb": [sentence.split(",")[6].replace("VERB:", "")],
+                        "adj": [sentence.split(",")[7].replace("ADJ:", "")],
+                        "noun": [sentence.split(",")[8].replace("NOUN:", "")]
 
-                })
-                db = pandas.concat([db, new_db], ignore_index=True, axis=0)
-                print(num)
-                num += 1
+                    })
+                    db = pandas.concat([db, new_db], ignore_index=True, axis=0)
+                    print(num)
+                    num += 1
             except:
                 pass
         db.to_excel(writer, sheet_name='Sheet1', startrow=1, header=False, index=False)
@@ -182,11 +208,39 @@ def grouping_sentences_in_excel(input_, output_):
         worksheet.set_column(0, max_col - 1, 12)
         writer.save()
 
+        db_2 = pandas.DataFrame({
+            "index": [emails.index(emails[0])],
+            "email": [emails[0]]
+        })
+        new_writer = pandas.ExcelWriter("emails_index.xlsx", engine='xlsxwriter')
+        db_2 = db_2[
+            ["index", "email"]
+        ]
+        num = 0
+        for email in emails:
+            try:
+                new_db_2 = pandas.DataFrame({
+                    "index": [emails.index(email)],
+                    "email": [email]
+                })
+                db_2 = pandas.concat([db_2, new_db_2], ignore_index=True, axis=0)
+                print(num)
+                num += 1
+            except:
+                pass
+        db_2.to_excel(new_writer, sheet_name='Sheet1', startrow=1, header=False, index=False)
+        worksheet = new_writer.sheets['Sheet1']
+        (max_row, max_col) = db_2.shape
+        column_settings = [{'header': column} for column in db_2.columns]
+        worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
+        worksheet.set_column(0, max_col - 1, 12)
+        new_writer.save()
+
 
 def final_function(_input, _output):
     sentence_formatting(_input, "file.txt")
     grouping_sentences("file.txt", "sentence_in_groups.txt")
-    grouping_sentences_in_excel("sentence_in_groups.txt",_output)
-    
-final_function("ex3.csv", "new.xlsx")
+    grouping_sentences_in_excel("sentence_in_groups.txt", _output)
 
+
+final_function("ex3.csv", "new_new.xlsx")
