@@ -3,14 +3,7 @@ from nltk.tokenize import sent_tokenize
 import string
 import re
 import pandas
-import xlsxwriter
-
 nlp = spacy.load("en_core_web_sm")
-
-
-# -------------------------------------------------------------------------------------------------------
-# The sentences should be compared by similarity as well as the display must be better I am working on it
-# -------------------------------------------------------------------------------------------------------
 
 
 def jaccard_similarity(x, y):
@@ -20,7 +13,7 @@ def jaccard_similarity(x, y):
     return intersection_cardinality / float(union_cardinality)
 
 
-def Cleaning(text):
+def cleaning(text):
     exclude = set(string.punctuation)
     exclude.remove('@')
 
@@ -35,7 +28,8 @@ def Cleaning(text):
     # remove non-ascii characters, all below the ordinal coding of 8000 are allowed, so times all emojis gone
     text = ''.join(character for character in text if ord(character) < 8000)
 
-    # remove punctuations # unfortunately the @ sign goes with it, so explicitly remove the @ sign from the exclude list
+    # remove punctuations # unfortunately the @ sign goes with it, so explicitly remove the @ sign from the
+    # exclude list
     text = ''.join(character for character in text if character not in exclude)
 
     # standardize white space
@@ -43,18 +37,20 @@ def Cleaning(text):
 
     # drop capitalization
     text = text.lower()
-    # now remove all twitter usernames, they have the structure @username, so explicitly leave the @ above to identify the usernames
+    # now remove all twitter usernames, they have the structure @username,
+    # so explicitly leave the @ above to identify the usernames
     text = re.sub('@[^\s]+', '', text)
 
-    # remove white space, this is the last step, because after removing the usernames there are often empty characters left
+    # remove white space, this is the last step, because after removing the
+    # usernames there are often empty characters left
     text = text.strip()
 
     return text
 
 
-def sentence_extractor(string):
+def sentence_extractor(string_):
     sentences_list = []
-    data = sent_tokenize(string)
+    data = sent_tokenize(string_)
     for sentence in data:
         txt = ""
         sentence = re.sub('<[^>]+>', '', sentence).strip()
@@ -75,7 +71,7 @@ def sentence_extractor(string):
                     word = ""
                 txt += " {}".format(word).replace(":", "")
         if txt and len(txt.split()) > 2 and (txt[-1] == "!" or txt[-1] == "." or txt[-1] == "?"):
-            txt = Cleaning(txt)
+            txt = cleaning(txt)
             sentences_list.append(txt.strip())
     return sentences_list
 
@@ -86,28 +82,28 @@ def sentence_formatting(_input, _output):
         for line in data_lines:
             for i in sentence_extractor(line.split(",")[4]):
                 doc = nlp(str(i))
-                PROPN = 0
-                VERB = 0
-                ADJ = 0
-                NOUN = 0
+                propn = 0
+                verb = 0
+                adj = 0
+                noun = 0
                 for token in doc:
                     if token.pos_ == "PROPN":
-                        PROPN += 1
+                        propn += 1
                     elif token.pos_ == "VERB":
-                        VERB += 1
+                        verb += 1
                     elif token.pos_ == "ADJ":
-                        ADJ += 1
+                        adj += 1
                     elif token.pos_ == "NOUN":
-                        NOUN += 1
+                        noun += 1
                 finished_line = f"" \
                                 f"DateTime: {line.split(',')[0]}," \
                                 f" From: {line.split(',')[1]}," \
                                 f" To: {line.split(',')[2]}," \
                                 f" Sentence:  {i.strip()}," \
-                                f" PROPN: {PROPN}," \
-                                f" VERB: {VERB}," \
-                                f" ADJ: {ADJ}," \
-                                f" NOUN: {NOUN}\n"
+                                f" PROPN: {propn}," \
+                                f" VERB: {verb}," \
+                                f" ADJ: {adj}," \
+                                f" NOUN: {noun}\n"
                 print(finished_line)
                 with open(_output, "a", encoding="charmap") as a:
                     a.write(finished_line)
@@ -136,18 +132,21 @@ def grouping_sentences_in_excel(input_, output_):
     with open(input_, "r", encoding="charmap") as d:
         sentences = d.readlines()
         print(sentences[0].split(",")[1])
-        emails = []
-        emails.append(sentences[0].split(",")[2].replace('"', "").replace("From:", "").replace('"', "").strip())
-        emails.append(sentences[0].split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip())
+        emails = [sentences[0].split(",")[2].replace('"', "").replace("From:", "").replace('"', "").strip().lower(),
+                  sentences[0].split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip().lower()]
         db = pandas.DataFrame({
             "similarity": [sentences[0].split(",")[0]],
             "date":
                 [sentences[0].split(",")[1].replace('"', "").replace("DateTime:", "")],
             "from": [
-                emails.index(sentences[0].split(",")[2].replace('"', "").replace("From:", "").replace('"', "").strip())
+                emails.index(
+                    sentences[0].split(",")[2].replace('"', "").replace("From:", "").replace('"', "").strip().lower()
+                )
             ],
             "to": [
-                emails.index(sentences[0].split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip())
+                emails.index(
+                    sentences[0].split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip().lower()
+                )
             ],
             "sentence": [sentences[0].split(",")[4].replace("Sentence:", "").strip()],
             "propn": [sentences[0].split(",")[5].replace("PROPN:", "")],
@@ -165,28 +164,26 @@ def grouping_sentences_in_excel(input_, output_):
         for sentence in sentences:
             try:
                 if sentences[0] != sentence:
-                    if sentence.split(",")[2].replace('"', "").replace("From:", "").replace('"', '').strip() not\
-                            in emails:
-                        emails.append(
-                            sentence.split(",")[2].replace('"', "").replace("From:", "").replace('"', '').strip()
-                        )
-                    if sentence.split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip() not\
-                            in emails:
-                        emails.append(
-                            sentence.split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip()
-                        )
+                    email_1 = sentence.split(",")[2].replace('"', "").replace("From:", "").replace('"',
+                                                                                                   '').strip().lower()
+                    if ";" in email_1:
+                        email_1 = email_1.split(';')[0].strip()
+                    email_2 = sentence.split(",")[3].replace('"', "").replace("To:", "").replace('"',
+                                                                                                 '').strip().lower()
+                    if ";" in email_2:
+                        email_2 = email_2.split(';')[0].strip()
+                    if email_1 not in emails:
+                        emails.append(email_1)
+                    if email_2 not in emails:
+                        emails.append(email_2)
                     new_db = pandas.DataFrame({
                         "similarity": [sentence.split(",")[0]],
                         "date": [sentence.split(",")[1].replace('"', "").replace("DateTime:", "")],
                         "from": [
-                            emails.index(
-                                sentence.split(",")[2].replace('"', "").replace("From:", "").replace('"', '').strip()
-                            )
+                            emails.index(email_1)
                         ],
                         "to": [
-                            emails.index(
-                                sentence.split(",")[3].replace('"', "").replace("To:", "").replace('"', '').strip()
-                            )
+                            emails.index(email_2)
                         ],
                         "sentence": [sentence.split(",")[4].replace("Sentence:", "").strip()],
                         "propn": [sentence.split(",")[5].replace("PROPN:", "")],
@@ -241,6 +238,3 @@ def final_function(_input, _output):
     sentence_formatting(_input, "file.txt")
     grouping_sentences("file.txt", "sentence_in_groups.txt")
     grouping_sentences_in_excel("sentence_in_groups.txt", _output)
-
-
-final_function("ex3.csv", "new_new.xlsx")
