@@ -7,3 +7,5 @@ https://stackoverflow.com/questions/15173225/calculate-cosine-similarity-given-2
 https://towardsdatascience.com/text-similarity-w-levenshtein-distance-in-python-2f7478986e75
 # Euclidean Distance:
 https://newscatcherapi.com/blog/ultimate-guide-to-text-similarity-with-python
+# Counting nouns/propn/verb/adjective
+https://spacy.io/usage/linguistic-features
