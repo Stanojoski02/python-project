@@ -186,7 +186,7 @@ def write_sentences_in_excel(input_, output_):
         db = pandas.DataFrame({
             "date":
                 [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "")],
-            "email_index": [sentences[0].split(",")[0].replace('"', "")],
+            "email_id": [sentences[0].split(",")[0].replace('"', "")],
             "from(email index)": [
                 emails.index(
                     sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower()
@@ -209,7 +209,7 @@ def write_sentences_in_excel(input_, output_):
         writer = pandas.ExcelWriter(output_, engine='xlsxwriter')
         db = db[
             [
-                "date", "email_index", "from(email index)",
+                "date", "email_id", "from(email index)",
                 "to(email index)", "sentence", "propn",
                 "verb", "adjective", "noun",
                 "jaccard_similarity", "cosine_similarity",
@@ -234,7 +234,7 @@ def write_sentences_in_excel(input_, output_):
                         emails.append(email_2)
                     new_db = pandas.DataFrame({
                         "date": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "")],
-                        "email_index": [sentence.split(",")[0].replace('"', "")],
+                        "email_id": [sentence.split(",")[0].replace('"', "")],
                         "from(email index)": [
                             emails.index(email_1)
                         ],
