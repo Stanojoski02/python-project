@@ -1,5 +1,5 @@
 ![new_diagram](https://user-images.githubusercontent.com/97593843/192646772-8faaa613-bae2-491d-9d80-93e158973d46.jpg)
-[glaven diagram.pdf](https://github.com/Stanojoski02/python-project/files/9713310/glaven.diagram.pdf)
+![f](https://user-images.githubusercontent.com/97593843/193997172-d0c1ab14-6d2a-4d37-bd1b-5cc2349befef.jpg)
 # Jaccard Similarity: 
 https://newscatcherapi.com/blog/ultimate-guide-to-text-similarity-with-python
 # Cosine Similarity:
