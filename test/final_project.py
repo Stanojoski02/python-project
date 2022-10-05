@@ -8,6 +8,7 @@ from collections import Counter
 import pylev
 from math import sqrt, pow
 import numpy
+
 nlp = spacy.load("en_core_web_sm")
 
 
@@ -114,19 +115,20 @@ def sentence_extractor(string_):
 
 
 def sentence_formatting(_input, _output):
+    email_num = 0
     with open(_input, "r", encoding="charmap") as data:
         data_lines = data.readlines()
         for line in data_lines:
             for i in sentence_extractor(line.split(",")[4]):
                 doc = nlp(str(i))
                 propn = 0
-#               propn: proper noun
+                #               propn: proper noun
                 verb = 0
-#               verb:  Word used to describe an action
+                #               verb:  Word used to describe an action
                 adj = 0
-#               adjective: A word naming an attribute of a noun, such as sweet, red
+                #               adjective: A word naming an attribute of a noun, such as sweet, red
                 noun = 0
-#               noun: A word used to identify any of a class of people, places, or things                
+                #               noun: A word used to identify any of a class of people, places, or things
                 for token in doc:
                     if token.pos_ == "PROPN":
                         propn += 1
@@ -136,7 +138,7 @@ def sentence_formatting(_input, _output):
                         adj += 1
                     elif token.pos_ == "NOUN":
                         noun += 1
-                finished_line = f"" \
+                finished_line = f"{email_num}," \
                                 f"DateTime: {line.split(',')[0]}," \
                                 f" From: {line.split(',')[1]}," \
                                 f" To: {line.split(',')[2]}," \
@@ -144,10 +146,12 @@ def sentence_formatting(_input, _output):
                                 f" PROPN: {propn}," \
                                 f" VERB: {verb}," \
                                 f" ADJ: {adj}," \
-                                f" NOUN: {noun}\n"
+                                f" NOUN: {noun}," \
+                                f"{line.split(',')[3]}\n"
                 print(finished_line)
                 with open(_output, "a", encoding="charmap") as a:
                     a.write(finished_line)
+            email_num += 1
 
 
 def grouping_sentences(_input, _output):
@@ -157,16 +161,16 @@ def grouping_sentences(_input, _output):
         for line in data_lines:
             sentences = []
             for line_2 in data_lines:
-                if jaccard_similarity(line.split(",")[3].split(), line_2.split(",")[3].split()) > 0.2:
-                    if line_2.split(',')[3] not in sen:
+                if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
+                    if line_2.split(',')[4] not in sen:
                         try:
-                            sentences.append(f""
-                                             f"{jaccard_similarity(line.split(',')[3].split(), line_2.split(',')[3].split())},"
-                                             f"{get_cosine(text_to_vector(line.split(',')[3]), text_to_vector(line_2.split(',')[3]))},"
-                                             f"{pylev.levenshtein(line.split(',')[3].split(), line_2.split(',')[3].split())},"
-                                             f"{euclidean_distance(nlp(line.split(',')[3]).vector, nlp(line_2.split(',')[3]).vector)},"
+                            sentences.append(f"{line.split(',')[0]},"
+                                             f"{jaccard_similarity(line.split(',')[4].split(), line_2.split(',')[4].split())},"
+                                             f"{get_cosine(text_to_vector(line.split(',')[4]), text_to_vector(line_2.split(',')[4]))},"
+                                             f"{pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split())},"
+                                             f"{euclidean_distance(nlp(line.split(',')[4]).vector, nlp(line_2.split(',')[4]).vector)},"
                                              f"{line_2}\n")
-                            sen.append(line_2.split(',')[3])
+                            sen.append(line_2.split(',')[4])
                         except:
                             pass
             if len(sentences) > 1:
@@ -179,34 +183,35 @@ def write_sentences_in_excel(input_, output_):
     with open(input_, "r", encoding="charmap") as d:
         sentences = d.readlines()
         print(sentences[0].split(",")[1])
-        emails = [sentences[0].split(",")[5].replace('"', "").replace("From:", "").replace('"', "").strip().lower(),
-                  sentences[0].split(",")[6].replace('"', "").replace("To:", "").replace('"', '').strip().lower()]
+        emails = [sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower(),
+                  sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()]
         db = pandas.DataFrame({
             "date":
-                [sentences[0].split(",")[4].replace('"', "").replace("DateTime:", "")],
+                [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "")],
+            "email_index": [sentences[0].split(",")[0].replace('"', "")],
             "from(email index)": [
                 emails.index(
-                    sentences[0].split(",")[5].replace('"', "").replace("From:", "").replace('"', "").strip().lower()
+                    sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower()
                 )],
             "to(email index)": [
                 emails.index(
-                    sentences[0].split(",")[6].replace('"', "").replace("To:", "").replace('"', '').strip().lower()
+                    sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()
                 )],
-            "sentence": [sentences[0].split(",")[7].replace("Sentence:", "").strip()],
-            "propn": [sentences[0].split(",")[8].replace("PROPN:", "")],
-            "verb": [sentences[0].split(",")[9].replace("VERB:", "")],
-            "adjective": [sentences[0].split(",")[10].replace("ADJ:", "")],
-            "noun": [sentences[0].split(",")[11].replace("NOUN:", "")],
-            "jaccard_similarity": [numpy.round(float(sentences[0].split(",")[0]), 4)],
-            "cosine_similarity": [numpy.round(float(sentences[0].split(",")[1]), 4)],
-            "levenshtein_distance": [sentences[0].split(",")[2]],
-            "euclidean_distance": [numpy.round(float(sentences[0].split(",")[3]), 4)]
+            "sentence": [sentences[0].split(",")[9].replace("Sentence:", "").strip()],
+            "propn": [sentences[0].split(",")[10].replace("PROPN:", "")],
+            "verb": [sentences[0].split(",")[11].replace("VERB:", "")],
+            "adjective": [sentences[0].split(",")[12].replace("ADJ:", "")],
+            "noun": [sentences[0].split(",")[13].replace("NOUN:", "")],
+            "jaccard_similarity": [numpy.round(float(sentences[0].split(",")[1]), 4)],
+            "cosine_similarity": [numpy.round(float(sentences[0].split(",")[2]), 4)],
+            "levenshtein_distance": [sentences[0].split(",")[3]],
+            "euclidean_distance": [numpy.round(float(sentences[0].split(",")[4]), 4)]
 
         })
         writer = pandas.ExcelWriter(output_, engine='xlsxwriter')
         db = db[
             [
-                "date", "from(email index)",
+                "date", "email_index", "from(email index)",
                 "to(email index)", "sentence", "propn",
                 "verb", "adjective", "noun",
                 "jaccard_similarity", "cosine_similarity",
@@ -217,11 +222,11 @@ def write_sentences_in_excel(input_, output_):
         for sentence in sentences:
             try:
                 if sentences[0] != sentence:
-                    email_1 = sentence.split(",")[5].replace('"', "").replace("From:", "").replace('"',
+                    email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"',
                                                                                                    '').strip().lower()
                     if ";" in email_1:
                         email_1 = email_1.split(';')[0].strip()
-                    email_2 = sentence.split(",")[6].replace('"', "").replace("To:", "").replace('"',
+                    email_2 = sentence.split(",")[8].replace('"', "").replace("To:", "").replace('"',
                                                                                                  '').strip().lower()
                     if ";" in email_2:
                         email_2 = email_2.split(';')[0].strip()
@@ -230,22 +235,23 @@ def write_sentences_in_excel(input_, output_):
                     if email_2 not in emails:
                         emails.append(email_2)
                     new_db = pandas.DataFrame({
-                        "date": [sentence.split(",")[4].replace('"', "").replace("DateTime:", "")],
+                        "date": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "")],
+                        "email_index": [sentence.split(",")[0].replace('"', "")],
                         "from(email index)": [
                             emails.index(email_1)
                         ],
                         "to(email index)": [
                             emails.index(email_2)
                         ],
-                        "sentence": [sentence.split(",")[7].replace("Sentence:", "").strip()],
-                        "propn": [sentence.split(",")[8].replace("PROPN:", "")],
-                        "verb": [sentence.split(",")[9].replace("VERB:", "")],
-                        "adjective": [sentence.split(",")[10].replace("ADJ:", "")],
-                        "noun": [sentence.split(",")[11].replace("NOUN:", "")],
-                        "jaccard_similarity": [numpy.round(float(sentence.split(",")[0]), 4)],
-                        "cosine_similarity": [numpy.round(float(sentence.split(",")[1]), 4)],
-                        "levenshtein_distance": [sentence.split(",")[2]],
-                        "euclidean_distance": [numpy.round(float(sentence.split(",")[3]), 4)]
+                        "sentence": [sentence.split(",")[9].replace("Sentence:", "").strip()],
+                        "propn": [sentence.split(",")[10].replace("PROPN:", "")],
+                        "verb": [sentence.split(",")[11].replace("VERB:", "")],
+                        "adjective": [sentence.split(",")[12].replace("ADJ:", "")],
+                        "noun": [sentence.split(",")[13].replace("NOUN:", "")],
+                        "jaccard_similarity": [numpy.round(float(sentence.split(",")[1]), 4)],
+                        "cosine_similarity": [numpy.round(float(sentence.split(",")[2]), 4)],
+                        "levenshtein_distance": [sentence.split(",")[3]],
+                        "euclidean_distance": [numpy.round(float(sentence.split(",")[4]), 4)]
 
                     })
                     db = pandas.concat([db, new_db], ignore_index=True, axis=0)
@@ -288,6 +294,82 @@ def write_sentences_in_excel(input_, output_):
         worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
         worksheet.set_column(0, max_col - 1, 12)
         new_writer.save()
+
+        sentence_list = []
+        email_ids = []
+        email_ids.append(sentences[0].split(",")[0].replace('"', ""))
+        for s in sentences:
+            if sentences[0].split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[9].replace(
+                    "Sentence:", "").strip() not in sentence_list:
+                sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
+        email_1 = sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"',
+                                                                                       '').strip().lower()
+        if ";" in email_1:
+            email_1 = email_1.split(';')[0].strip()
+        email_2 = sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"',
+                                                                                     '').strip().lower()
+        if ";" in email_2:
+            email_2 = email_2.split(';')[0].strip()
+        db_3 = pandas.DataFrame({
+            "email_id": [sentences[0].split(",")[0].replace('"', "")],
+            "email_date": [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
+            "email_time": [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
+            "email_subject": [sentences[0].split(",")[14]],
+            "from_id": [
+                emails.index(email_1)
+            ],
+            "to_id": [
+                emails.index(email_2)
+            ],
+            "body": [str(sentence_list).replace("]", "").replace("[", "")]
+        })
+        new_writer_1 = pandas.ExcelWriter("new_tab.xlsx", engine='xlsxwriter')
+        db_3 = db_3[
+            ["email_id", "email_date", "email_time", "email_subject", "from_id", "to_id", "body"]
+        ]
+        num = 0
+        for sentence in sentences:
+            sentence_list = []
+            try:
+                if sentence.split(",")[0].replace('"', "") not in email_ids:
+                    email_ids.append(sentence.split(",")[0].replace('"', ""))
+                    for s in sentences:
+                        if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[9].replace("Sentence:", "").strip() not in sentence_list:
+                            sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
+                    if sentences[0] != sentence:
+                        email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"',
+                                                                                                       '').strip().lower()
+                        if ";" in email_1:
+                            email_1 = email_1.split(';')[0].strip()
+                        email_2 = sentence.split(",")[8].replace('"', "").replace("To:", "").replace('"',
+                                                                                                     '').strip().lower()
+                        if ";" in email_2:
+                            email_2 = email_2.split(';')[0].strip()
+                        new_db_3 = pandas.DataFrame({
+                            "email_id": [sentence.split(",")[0].replace('"', "")],
+                            "email_date": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
+                            "email_time": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
+                            "email_subject": [sentence.split(",")[14]],
+                            "from_id": [
+                                emails.index(email_1)
+                            ],
+                            "to_id": [
+                                emails.index(email_2)
+                            ],
+                            "body": [str(sentence_list).replace("]", "").replace("[", "")]
+                        })
+                        db_3 = pandas.concat([db_3, new_db_3], ignore_index=True, axis=0)
+                        print(num)
+                        num += 1
+            except:
+                pass
+        db_3.to_excel(new_writer_1, sheet_name='Sheet1', startrow=1, header=False, index=False)
+        worksheet = new_writer_1.sheets['Sheet1']
+        (max_row, max_col) = db_3.shape
+        column_settings = [{'header': column} for column in db_3.columns]
+        worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
+        worksheet.set_column(0, max_col - 1, 12)
+        new_writer_1.save()
 
 
 def final_function(_input, _output):
