@@ -148,7 +148,6 @@ def sentence_formatting(_input, _output):
                                 f" ADJ: {adj}," \
                                 f" NOUN: {noun}," \
                                 f"{line.split(',')[3]}\n"
-                print(finished_line)
                 with open(_output, "a", encoding="charmap") as a:
                     a.write(finished_line)
             email_num += 1
@@ -182,7 +181,6 @@ def grouping_sentences(_input, _output):
 def write_sentences_in_excel(input_, output_):
     with open(input_, "r", encoding="charmap") as d:
         sentences = d.readlines()
-        print(sentences[0].split(",")[1])
         emails = [sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower(),
                   sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()]
         db = pandas.DataFrame({
@@ -255,7 +253,6 @@ def write_sentences_in_excel(input_, output_):
 
                     })
                     db = pandas.concat([db, new_db], ignore_index=True, axis=0)
-                    print(num)
                     num += 1
             except:
                 pass
@@ -283,7 +280,6 @@ def write_sentences_in_excel(input_, output_):
                     "email": [email]
                 })
                 db_2 = pandas.concat([db_2, new_db_2], ignore_index=True, axis=0)
-                print(num)
                 num += 1
             except:
                 pass
@@ -359,7 +355,6 @@ def write_sentences_in_excel(input_, output_):
                             "body": [str(sentence_list).replace("]", "").replace("[", "")]
                         })
                         db_3 = pandas.concat([db_3, new_db_3], ignore_index=True, axis=0)
-                        print(num)
                         num += 1
             except:
                 pass
