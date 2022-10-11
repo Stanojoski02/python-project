@@ -118,8 +118,13 @@ def sentence_formatting(_input, _output):
     email_num = 0
     with open(_input, "r", encoding="charmap") as data:
         data_lines = data.readlines()
+        line_num = 0
+        print("sentence_formatting function is running")
         for line in data_lines:
             for i in sentence_extractor(line.split(",")[4]):
+                if line_num % 500 == 0:
+                    print(f"Sorted and formatted sentences {line_num}")
+                line_num += 1
                 doc = nlp(str(i))
                 propn = 0
                 #               propn: proper noun
@@ -155,10 +160,15 @@ def sentence_formatting(_input, _output):
 
 def grouping_sentences(_input, _output):
     sen = []
+    print("grouping_sentences function is running")
+    line_num = 0
     with open(_input, "r", encoding="charmap") as d:
         data_lines = d.readlines()
         for line in data_lines:
             sentences = []
+            if line_num % 500 == 0:
+                print(f"Grouping is up to {line_num} lines")
+            line_num += 1
             for line_2 in data_lines:
                 if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
                     if line_2.split(',')[4] not in sen:
@@ -179,7 +189,9 @@ def grouping_sentences(_input, _output):
 
 
 def write_sentences_in_excel(input_, output_):
+    print("write_sentences_in_excel function is running")
     with open(input_, "r", encoding="charmap") as d:
+        number_of_sentences = 1
         sentences = d.readlines()
         emails = [sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower(),
                   sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()]
@@ -217,6 +229,7 @@ def write_sentences_in_excel(input_, output_):
             ]
         ]
         num = 0
+        number_of_sentences = 1
         for sentence in sentences:
             try:
                 if sentences[0] != sentence:
@@ -252,8 +265,11 @@ def write_sentences_in_excel(input_, output_):
                         "euclidean_distance": [numpy.round(float(sentence.split(",")[4]), 4)]
 
                     })
+                    if number_of_sentences % 100 == 0:
+                        print(f"{number_of_sentences} sentences are recorded")
                     db = pandas.concat([db, new_db], ignore_index=True, axis=0)
                     num += 1
+                    number_of_sentences += 1
             except:
                 pass
         db.to_excel(writer, sheet_name='Sheet1', startrow=1, header=False, index=False)
@@ -263,7 +279,7 @@ def write_sentences_in_excel(input_, output_):
         worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
         worksheet.set_column(0, max_col - 1, 12)
         writer.save()
-
+        number_of_emails = 1
         db_2 = pandas.DataFrame({
             "index": [emails.index(emails[0])],
             "email": [emails[0]]
@@ -275,6 +291,9 @@ def write_sentences_in_excel(input_, output_):
         num = 0
         for email in emails:
             try:
+                if number_of_emails %100 == 0:
+                    print(f"{number_of_emails} email addresses are recorded")
+                number_of_emails += 1
                 new_db_2 = pandas.DataFrame({
                     "index": [emails.index(email)],
                     "email": [email]
