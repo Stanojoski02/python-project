@@ -195,11 +195,14 @@ def test_function(_input, _output):
     line_num = 0
     with open(_input, "r", encoding="charmap") as d:
         data_lines = d.readlines()
+        num_of_sentances = 0;
         for line in data_lines:
             sentences = []
-            if line_num == 500:
+            num_of_sentences_in_group = 0
+            if num_of_sentances >= 2500:
                 time_for_running = datetime.datetime.now() - begin_time
-                print(f"Time for running {time_for_running.total_seconds()}")
+                print(f"{int(2500/time_for_running.total_seconds()*60)} sentences per minute are grouped")
+                print(f"{int(2500/time_for_running.total_seconds()*60)/60} sentences per second are grouped")
                 break
             line_num += 1
             for line_2 in data_lines:
@@ -213,9 +216,12 @@ def test_function(_input, _output):
                                              f"{euclidean_distance(nlp(line.split(',')[4]).vector, nlp(line_2.split(',')[4]).vector)},"
                                              f"{line_2}\n")
                             sen.append(line_2.split(',')[4])
+                            num_of_sentences_in_group += 1
+
                         except:
                             pass
             if len(sentences) > 1:
+                num_of_sentances += num_of_sentences_in_group
                 for sentence in sentences:
                     with open(_output, "a", encoding="charmap") as writer:
                         writer.write(sentence)
@@ -426,4 +432,4 @@ def final_function(_input, _output):
     grouping_sentences("file.txt", "sentence_in_groups.txt")
     write_sentences_in_excel("sentence_in_groups.txt", _output)
 
-test_function("file.txt", "sentence_in_groups.txt")
+test_function("file.txt", "test.txt")
