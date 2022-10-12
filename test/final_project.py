@@ -8,6 +8,7 @@ from collections import Counter
 import pylev
 from math import sqrt, pow
 import numpy
+import datetime
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -186,7 +187,39 @@ def grouping_sentences(_input, _output):
                 for sentence in sentences:
                     with open(_output, "a", encoding="charmap") as writer:
                         writer.write(sentence)
-
+                        
+def test_function(_input, _output):
+    sen = []
+    begin_time = datetime.datetime.now()
+    print("grouping_sentences function is running")
+    line_num = 0
+    with open(_input, "r", encoding="charmap") as d:
+        data_lines = d.readlines()
+        for line in data_lines:
+            sentences = []
+            if line_num == 500:
+                time_for_running = datetime.datetime.now() - begin_time
+                print(f"Time for running {time_for_running.total_seconds()}")
+                break
+            line_num += 1
+            for line_2 in data_lines:
+                if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
+                    if line_2.split(',')[4] not in sen:
+                        try:
+                            sentences.append(f"{line.split(',')[0]},"
+                                             f"{jaccard_similarity(line.split(',')[4].split(), line_2.split(',')[4].split())},"
+                                             f"{get_cosine(text_to_vector(line.split(',')[4]), text_to_vector(line_2.split(',')[4]))},"
+                                             f"{pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split())},"
+                                             f"{euclidean_distance(nlp(line.split(',')[4]).vector, nlp(line_2.split(',')[4]).vector)},"
+                                             f"{line_2}\n")
+                            sen.append(line_2.split(',')[4])
+                        except:
+                            pass
+            if len(sentences) > 1:
+                for sentence in sentences:
+                    with open(_output, "a", encoding="charmap") as writer:
+                        writer.write(sentence)
+    
 
 def write_sentences_in_excel(input_, output_):
     print("write_sentences_in_excel function is running")
@@ -291,7 +324,7 @@ def write_sentences_in_excel(input_, output_):
         num = 0
         for email in emails:
             try:
-                if number_of_emails %100 == 0:
+                if number_of_emails % 100 == 0:
                     print(f"{number_of_emails} email addresses are recorded")
                 number_of_emails += 1
                 new_db_2 = pandas.DataFrame({
@@ -314,15 +347,16 @@ def write_sentences_in_excel(input_, output_):
         email_ids = []
         email_ids.append(sentences[0].split(",")[0].replace('"', ""))
         for s in sentences:
-            if sentences[0].split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[9].replace(
+            if sentences[0].split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[
+                9].replace(
                     "Sentence:", "").strip() not in sentence_list:
                 sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
         email_1 = sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"',
-                                                                                       '').strip().lower()
+                                                                                           '').strip().lower()
         if ";" in email_1:
             email_1 = email_1.split(';')[0].strip()
         email_2 = sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"',
-                                                                                     '').strip().lower()
+                                                                                         '').strip().lower()
         if ";" in email_2:
             email_2 = email_2.split(';')[0].strip()
         db_3 = pandas.DataFrame({
@@ -349,7 +383,8 @@ def write_sentences_in_excel(input_, output_):
                 if sentence.split(",")[0].replace('"', "") not in email_ids:
                     email_ids.append(sentence.split(",")[0].replace('"', ""))
                     for s in sentences:
-                        if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[9].replace("Sentence:", "").strip() not in sentence_list:
+                        if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[
+                            9].replace("Sentence:", "").strip() not in sentence_list:
                             sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
                     if sentences[0] != sentence:
                         email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"',
@@ -390,3 +425,5 @@ def final_function(_input, _output):
     sentence_formatting(_input, "file.txt")
     grouping_sentences("file.txt", "sentence_in_groups.txt")
     write_sentences_in_excel("sentence_in_groups.txt", _output)
+
+test_function("file.txt", "sentence_in_groups.txt")
