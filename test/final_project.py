@@ -122,40 +122,46 @@ def sentence_formatting(_input, _output):
         line_num = 0
         print("sentence_formatting function is running")
         for line in data_lines:
-            for i in sentence_extractor(line.split(",")[4]):
-                if line_num % 500 == 0:
-                    print(f"Sorted and formatted sentences {line_num}")
-                line_num += 1
-                doc = nlp(str(i))
-                propn = 0
-                #               propn: proper noun
-                verb = 0
-                #               verb:  Word used to describe an action
-                adj = 0
-                #               adjective: A word naming an attribute of a noun, such as sweet, red
-                noun = 0
-                #               noun: A word used to identify any of a class of people, places, or things
-                for token in doc:
-                    if token.pos_ == "PROPN":
-                        propn += 1
-                    elif token.pos_ == "VERB":
-                        verb += 1
-                    elif token.pos_ == "ADJ":
-                        adj += 1
-                    elif token.pos_ == "NOUN":
-                        noun += 1
-                finished_line = f"{email_num}," \
-                                f"DateTime: {line.split(',')[0]}," \
-                                f" From: {line.split(',')[1]}," \
-                                f" To: {line.split(',')[2]}," \
-                                f" Sentence:  {i.strip()}," \
-                                f" PROPN: {propn}," \
-                                f" VERB: {verb}," \
-                                f" ADJ: {adj}," \
-                                f" NOUN: {noun}," \
-                                f"{line.split(',')[3]}\n"
-                with open(_output, "a", encoding="charmap") as a:
-                    a.write(finished_line)
+            try:
+                for i in sentence_extractor(line.split(",")[4]):
+                    try:
+                        if line_num % 500 == 0:
+                            print(f"Sorted and formatted sentences {line_num}")
+                        line_num += 1
+                        doc = nlp(str(i))
+                        propn = 0
+                        #               propn: proper noun
+                        verb = 0
+                        #               verb:  Word used to describe an action
+                        adj = 0
+                        #               adjective: A word naming an attribute of a noun, such as sweet, red
+                        noun = 0
+                        #               noun: A word used to identify any of a class of people, places, or things
+                        for token in doc:
+                            if token.pos_ == "PROPN":
+                                propn += 1
+                            elif token.pos_ == "VERB":
+                                verb += 1
+                            elif token.pos_ == "ADJ":
+                                adj += 1
+                            elif token.pos_ == "NOUN":
+                                noun += 1
+                        finished_line = f"{email_num}," \
+                                        f"DateTime: {line.split(',')[0]}," \
+                                        f" From: {line.split(',')[1]}," \
+                                        f" To: {line.split(',')[2]}," \
+                                        f" Sentence:  {i.strip()}," \
+                                        f" PROPN: {propn}," \
+                                        f" VERB: {verb}," \
+                                        f" ADJ: {adj}," \
+                                        f" NOUN: {noun}," \
+                                        f"{line.split(',')[3]}\n"
+                        with open(_output, "a", encoding="charmap") as a:
+                            a.write(finished_line)
+                    except:
+                        pass
+            except:
+                pass
             email_num += 1
 
 
@@ -187,8 +193,9 @@ def grouping_sentences(_input, _output):
                 for sentence in sentences:
                     with open(_output, "a", encoding="charmap") as writer:
                         writer.write(sentence)
-                        
-def test_function(_input, _output,number_of_sentences):
+
+
+def test_function(_input, _output, number_of_sentences):
     sen = []
     begin_time = datetime.datetime.now()
     print("grouping_sentences function is running")
@@ -201,8 +208,9 @@ def test_function(_input, _output,number_of_sentences):
             num_of_sentences_in_group = 0
             if num_of_sentances >= number_of_sentences:
                 time_for_running = datetime.datetime.now() - begin_time
-                print(f"{int(number_of_sentences/time_for_running.total_seconds()*60)} sentences per minute are grouped")
-                print(f"{int(number_of_sentences/time_for_running.total_seconds())} sentences per second are grouped")
+                print(
+                    f"{int(number_of_sentences / time_for_running.total_seconds() * 60)} sentences per minute are grouped")
+                print(f"{int(number_of_sentences / time_for_running.total_seconds())} sentences per second are grouped")
                 break
             line_num += 1
             for line_2 in data_lines:
@@ -225,7 +233,7 @@ def test_function(_input, _output,number_of_sentences):
                 for sentence in sentences:
                     with open(_output, "a", encoding="charmap") as writer:
                         writer.write(sentence)
-    
+
 
 def write_sentences_in_excel(input_, output_):
     print("write_sentences_in_excel function is running")
@@ -355,7 +363,7 @@ def write_sentences_in_excel(input_, output_):
         for s in sentences:
             if sentences[0].split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[
                 9].replace(
-                    "Sentence:", "").strip() not in sentence_list:
+                "Sentence:", "").strip() not in sentence_list:
                 sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
         email_1 = sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"',
                                                                                            '').strip().lower()
@@ -432,4 +440,5 @@ def final_function(_input, _output):
     grouping_sentences("file.txt", "sentence_in_groups.txt")
     write_sentences_in_excel("sentence_in_groups.txt", _output)
 
-test_function("file.txt", "test.txt",2200)
+sentence_formatting("emails_RAW.csv","file.txt")
+test_function("file.txt", "testing.txt", 1000)
