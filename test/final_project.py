@@ -188,7 +188,7 @@ def grouping_sentences(_input, _output):
                     with open(_output, "a", encoding="charmap") as writer:
                         writer.write(sentence)
                         
-def test_function(_input, _output):
+def test_function(_input, _output,number_of_sentences):
     sen = []
     begin_time = datetime.datetime.now()
     print("grouping_sentences function is running")
@@ -199,10 +199,10 @@ def test_function(_input, _output):
         for line in data_lines:
             sentences = []
             num_of_sentences_in_group = 0
-            if num_of_sentances >= 2500:
+            if num_of_sentances >= number_of_sentences:
                 time_for_running = datetime.datetime.now() - begin_time
-                print(f"{int(2500/time_for_running.total_seconds()*60)} sentences per minute are grouped")
-                print(f"{int(2500/time_for_running.total_seconds()*60)/60} sentences per second are grouped")
+                print(f"{int(number_of_sentences/time_for_running.total_seconds()*60)} sentences per minute are grouped")
+                print(f"{int(number_of_sentences/time_for_running.total_seconds())} sentences per second are grouped")
                 break
             line_num += 1
             for line_2 in data_lines:
@@ -432,4 +432,4 @@ def final_function(_input, _output):
     grouping_sentences("file.txt", "sentence_in_groups.txt")
     write_sentences_in_excel("sentence_in_groups.txt", _output)
 
-test_function("file.txt", "test.txt")
+test_function("file.txt", "test.txt",2200)
