@@ -9,6 +9,8 @@ import pylev
 from math import sqrt, pow
 import numpy
 import datetime
+import openpyxl
+import pandas as pd
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -331,7 +333,7 @@ def write_sentences_in_excel(input_, output_):
             "index": [emails.index(emails[0])],
             "email": [emails[0]]
         })
-        new_writer = pandas.ExcelWriter("emails_index.xlsx", engine='xlsxwriter')
+        new_writer = pandas.ExcelWriter("tbl_email_address.xlsx", engine='xlsxwriter')
         db_2 = db_2[
             ["index", "email"]
         ]
@@ -386,7 +388,7 @@ def write_sentences_in_excel(input_, output_):
             ],
             "body": [str(sentence_list).replace("]", "").replace("[", "")]
         })
-        new_writer_1 = pandas.ExcelWriter("new_tab.xlsx", engine='xlsxwriter')
+        new_writer_1 = pandas.ExcelWriter("tbl_email.xlsx", engine='xlsxwriter')
         db_3 = db_3[
             ["email_id", "email_date", "email_time", "email_subject", "from_id", "to_id", "body"]
         ]
@@ -397,8 +399,7 @@ def write_sentences_in_excel(input_, output_):
                 if sentence.split(",")[0].replace('"', "") not in email_ids:
                     email_ids.append(sentence.split(",")[0].replace('"', ""))
                     for s in sentences:
-                        if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[
-                            9].replace("Sentence:", "").strip() not in sentence_list:
+                        if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[9].replace("Sentence:", "").strip() not in sentence_list:
                             sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
                     if sentences[0] != sentence:
                         email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"',
@@ -434,11 +435,55 @@ def write_sentences_in_excel(input_, output_):
         worksheet.set_column(0, max_col - 1, 12)
         new_writer_1.save()
 
+def communication_streams(input_, output_):
+    data = pd.read_excel(input_)
+    list = data.values.tolist()
+    sorted_list = []
+    com_s = 0
+    sorted_communication_stream = []
+    for i in list:
+        for j in list:
+            if (i[4] == j[4] or j[4] == j[5]) and (i[5] == j[5] or i[5] == j[4]) and j[0] not in sorted_communication_stream:
+                sorted_list.append((com_s, j))
+                sorted_communication_stream.append(j[0])
+        com_s += 1
+    db = pandas.DataFrame({
+        "id": [sorted_list.index(sorted_list[0])],
+        "comm_stream_id": [sorted_list[0][0]],
+        "email_id": [sorted_list[0][1][0]]
+    })
+    new_writer_1 = pandas.ExcelWriter(output_, engine='xlsxwriter')
+    db = db[
+        ["id", "comm_stream_id", "email_id"]
+    ]
+    num = 0
+    for comunication_stream in sorted_list:
+        if comunication_stream != sorted_list[0]:
+            try:
+                new_db = pandas.DataFrame({
+                    "id": [sorted_list.index(comunication_stream)],
+                    "comm_stream_id": [comunication_stream[0]],
+                    "email_id": [comunication_stream[1][0]],
+
+                })
+                db = pandas.concat([db, new_db], ignore_index=True, axis=0)
+                num += 1
+            except:
+                pass
+    db.to_excel(new_writer_1, sheet_name='Sheet1', startrow=1, header=False, index=False)
+    worksheet = new_writer_1.sheets['Sheet1']
+    (max_row, max_col) = db.shape
+    column_settings = [{'header': column} for column in db.columns]
+    worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
+    worksheet.set_column(0, max_col - 1, 12)
+    new_writer_1.save()
+
 
 def final_function(_input, _output):
     sentence_formatting(_input, "file.txt")
     grouping_sentences("file.txt", "sentence_in_groups.txt")
     write_sentences_in_excel("sentence_in_groups.txt", _output)
 
-sentence_formatting("emails_RAW.csv","file.txt")
-test_function("file.txt", "testing.txt", 1000)
+
+#final_function("ex3.csv", "tbl_sentence.xlsx")
+#communication_streams('tbl_email.xlsx', 'proba.xlsx')
