@@ -483,7 +483,7 @@ def final_function(_input, _output):
     sentence_formatting(_input, "file.txt")
     grouping_sentences("file.txt", "sentence_in_groups.txt")
     write_sentences_in_excel("sentence_in_groups.txt", _output)
+    communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
 
-#final_function("ex3.csv", "tbl_sentence.xlsx")
-#communication_streams('tbl_email.xlsx', 'proba.xlsx')
+final_function("ex3.csv", "tbl_sentence.xlsx")
