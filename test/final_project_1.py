@@ -122,8 +122,6 @@ def sentence_formatting(_input, _output):
     with open(_input, "r", encoding="charmap") as data:
         data = pd.read_csv(_input)
         data_lines = data.values.tolist()
-        for i in data_lines:
-            print(i)
         line_num = 0
         print("sentence_formatting function is running")
         for line in data_lines:
