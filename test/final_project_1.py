@@ -119,53 +119,52 @@ def sentence_extractor(string_):
 
 def sentence_formatting(_input, _output):
     email_num = 0
-    with open(_input, "r", encoding="charmap") as data:
-        data = pd.read_csv(_input)
-        data_lines = data.values.tolist()
-        line_num = 0
-        print("sentence_formatting function is running")
-        for line in data_lines:
-            try:
-                for i in sentence_extractor(line[4]):
-                    try:
-                        if line_num % 500 == 0:
-                            print(f"Sorted and formatted sentences {line_num}")
-                        line_num += 1
-                        doc = nlp(str(i))
-                        propn = 0
-                        #               propn: proper noun
-                        verb = 0
-                        #               verb:  Word used to describe an action
-                        adj = 0
-                        #               adjective: A word naming an attribute of a noun, such as sweet, red
-                        noun = 0
-                        #               noun: A word used to identify any of a class of people, places, or things
-                        for token in doc:
-                            if token.pos_ == "PROPN":
-                                propn += 1
-                            elif token.pos_ == "VERB":
-                                verb += 1
-                            elif token.pos_ == "ADJ":
-                                adj += 1
-                            elif token.pos_ == "NOUN":
-                                noun += 1
-                        finished_line = f"{email_num}," \
-                                        f"DateTime: {line[0]}," \
-                                        f" From: {line[1]}," \
-                                        f" To: {line[2]}," \
-                                        f" Sentence:  {i.strip()}," \
-                                        f" PROPN: {propn}," \
-                                        f" VERB: {verb}," \
-                                        f" ADJ: {adj}," \
-                                        f" NOUN: {noun}," \
-                                        f"{line[3]}\n"
-                        with open(_output, "a", encoding="charmap") as a:
-                            a.write(finished_line)
-                    except:
-                        pass
-            except:
-                pass
-            email_num += 1
+    data = pd.read_csv(_input)
+    data_lines = data.values.tolist()
+    line_num = 0
+    print("sentence_formatting function is running")
+    for line in data_lines:
+        try:
+            for i in sentence_extractor(line[4]):
+                try:
+                    if line_num % 500 == 0:
+                        print(f"Sorted and formatted sentences {line_num}")
+                    line_num += 1
+                    doc = nlp(str(i))
+                    propn = 0
+                    #               propn: proper noun
+                    verb = 0
+                    #               verb:  Word used to describe an action
+                    adj = 0
+                    #               adjective: A word naming an attribute of a noun, such as sweet, red
+                    noun = 0
+                    #               noun: A word used to identify any of a class of people, places, or things
+                    for token in doc:
+                        if token.pos_ == "PROPN":
+                            propn += 1
+                        elif token.pos_ == "VERB":
+                            verb += 1
+                        elif token.pos_ == "ADJ":
+                            adj += 1
+                        elif token.pos_ == "NOUN":
+                            noun += 1
+                    finished_line = f"{email_num}," \
+                                    f"DateTime: {line[0]}," \
+                                    f" From: {line[1]}," \
+                                    f" To: {line[2]}," \
+                                    f" Sentence:  {i.strip()}," \
+                                    f" PROPN: {propn}," \
+                                    f" VERB: {verb}," \
+                                    f" ADJ: {adj}," \
+                                    f" NOUN: {noun}," \
+                                    f"{line[3]}\n"
+                    with open(_output, "a", encoding="charmap") as a:
+                        a.write(finished_line)
+                except:
+                    pass
+        except:
+            pass
+        email_num += 1
 
 
 def grouping_sentences(_input, _output):
@@ -400,7 +399,8 @@ def write_sentences_in_excel(input_, output_):
                 if sentence.split(",")[0].replace('"', "") not in email_ids:
                     email_ids.append(sentence.split(",")[0].replace('"', ""))
                     for s in sentences:
-                        if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[9].replace("Sentence:", "").strip() not in sentence_list:
+                        if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[
+                            9].replace("Sentence:", "").strip() not in sentence_list:
                             sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
                     if sentences[0] != sentence:
                         email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"',
@@ -436,6 +436,7 @@ def write_sentences_in_excel(input_, output_):
         worksheet.set_column(0, max_col - 1, 12)
         new_writer_1.save()
 
+
 def communication_streams(input_, output_):
     data = pd.read_excel(input_)
     list = data.values.tolist()
@@ -444,7 +445,8 @@ def communication_streams(input_, output_):
     sorted_communication_stream = []
     for i in list:
         for j in list:
-            if (i[4] == j[4] or j[4] == j[5]) and (i[5] == j[5] or i[5] == j[4]) and j[0] not in sorted_communication_stream:
+            if (i[4] == j[4] or j[4] == j[5]) and (i[5] == j[5] or i[5] == j[4]) and j[
+                0] not in sorted_communication_stream:
                 sorted_list.append((com_s, j))
                 sorted_communication_stream.append(j[0])
         com_s += 1
@@ -480,11 +482,63 @@ def communication_streams(input_, output_):
     new_writer_1.save()
 
 
+def old_sentence_formatting(_input, _output):
+    email_num = 0
+    with open(_input, "r", encoding="charmap") as data:
+        data_lines = data.readlines()
+        line_num = 0
+        print("sentence_formatting function is running")
+        for line in data_lines:
+            try:
+                for i in sentence_extractor(line.split(",")[4]):
+                    try:
+                        if line_num % 500 == 0:
+                            print(f"Sorted and formatted sentences {line_num}")
+                        line_num += 1
+                        doc = nlp(str(i))
+                        propn = 0
+                        #               propn: proper noun
+                        verb = 0
+                        #               verb:  Word used to describe an action
+                        adj = 0
+                        #               adjective: A word naming an attribute of a noun, such as sweet, red
+                        noun = 0
+                        #               noun: A word used to identify any of a class of people, places, or things
+                        for token in doc:
+                            if token.pos_ == "PROPN":
+                                propn += 1
+                            elif token.pos_ == "VERB":
+                                verb += 1
+                            elif token.pos_ == "ADJ":
+                                adj += 1
+                            elif token.pos_ == "NOUN":
+                                noun += 1
+                        finished_line = f"{email_num}," \
+                                        f"DateTime: {line.split(',')[0]}," \
+                                        f" From: {line.split(',')[1]}," \
+                                        f" To: {line.split(',')[2]}," \
+                                        f" Sentence:  {i.strip()}," \
+                                        f" PROPN: {propn}," \
+                                        f" VERB: {verb}," \
+                                        f" ADJ: {adj}," \
+                                        f" NOUN: {noun}," \
+                                        f"{line.split(',')[3]}\n"
+                        with open(_output, "a", encoding="charmap") as a:
+                            a.write(finished_line)
+                    except:
+                        pass
+            except:
+                pass
+            email_num += 1
+
+
 def final_function(_input, _output):
-    sentence_formatting(_input, "file.txt")
+    try:
+        sentence_formatting(_input, "file.txt")
+    except:
+        old_sentence_formatting(_input, "file.txt")
     grouping_sentences("file.txt", "sentence_in_groups.txt")
     write_sentences_in_excel("sentence_in_groups.txt", _output)
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
-
-final_function("import.csv", "tbl_sentence.xlsx")
+final_function("data.csv", "tbl_sentence.xlsx")
