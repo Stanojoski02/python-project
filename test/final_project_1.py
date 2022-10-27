@@ -245,6 +245,7 @@ def write_sentences_in_excel(input_, output_):
         emails = [sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower(),
                   sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()]
         db = pandas.DataFrame({
+            "ID":[0],
             "date":
                 [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "")],
             "email_id": [sentences[0].split(",")[0].replace('"', "")],
@@ -270,7 +271,7 @@ def write_sentences_in_excel(input_, output_):
         writer = pandas.ExcelWriter(output_, engine='xlsxwriter')
         db = db[
             [
-                "date", "email_id", "from(email index)",
+                "ID","date", "email_id", "from(email index)",
                 "to(email index)", "sentence", "propn",
                 "verb", "adjective", "noun",
                 "jaccard_similarity", "cosine_similarity",
@@ -278,6 +279,7 @@ def write_sentences_in_excel(input_, output_):
             ]
         ]
         num = 0
+        ID = 1
         number_of_sentences = 1
         for sentence in sentences:
             try:
@@ -295,6 +297,7 @@ def write_sentences_in_excel(input_, output_):
                     if email_2 not in emails:
                         emails.append(email_2)
                     new_db = pandas.DataFrame({
+                        "ID":ID,
                         "date": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "")],
                         "email_id": [sentence.split(",")[0].replace('"', "")],
                         "from(email index)": [
@@ -314,6 +317,7 @@ def write_sentences_in_excel(input_, output_):
                         "euclidean_distance": [numpy.round(float(sentence.split(",")[4]), 4)]
 
                     })
+                    ID += 1
                     if number_of_sentences % 100 == 0:
                         print(f"{number_of_sentences} sentences are recorded")
                     db = pandas.concat([db, new_db], ignore_index=True, axis=0)
@@ -328,27 +332,32 @@ def write_sentences_in_excel(input_, output_):
         worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
         worksheet.set_column(0, max_col - 1, 12)
         writer.save()
+        ID = 0
         number_of_emails = 1
         db_2 = pandas.DataFrame({
+            "ID":ID,
             "index": [emails.index(emails[0])],
             "email": [emails[0]]
         })
         new_writer = pandas.ExcelWriter("tbl_email_address.xlsx", engine='xlsxwriter')
         db_2 = db_2[
-            ["index", "email"]
+            ["ID","index", "email"]
         ]
         num = 0
+        ID += 1
         for email in emails:
             try:
                 if number_of_emails % 100 == 0:
                     print(f"{number_of_emails} email addresses are recorded")
                 number_of_emails += 1
                 new_db_2 = pandas.DataFrame({
+                    "ID":ID,
                     "index": [emails.index(email)],
                     "email": [email]
                 })
                 db_2 = pandas.concat([db_2, new_db_2], ignore_index=True, axis=0)
                 num += 1
+                ID += 1
             except:
                 pass
         db_2.to_excel(new_writer, sheet_name='Sheet1', startrow=1, header=False, index=False)
@@ -375,7 +384,9 @@ def write_sentences_in_excel(input_, output_):
                                                                                          '').strip().lower()
         if ";" in email_2:
             email_2 = email_2.split(';')[0].strip()
+        ID = 0
         db_3 = pandas.DataFrame({
+            "ID":ID,
             "email_id": [sentences[0].split(",")[0].replace('"', "")],
             "email_date": [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
             "email_time": [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
@@ -390,9 +401,10 @@ def write_sentences_in_excel(input_, output_):
         })
         new_writer_1 = pandas.ExcelWriter("tbl_email.xlsx", engine='xlsxwriter')
         db_3 = db_3[
-            ["email_id", "email_date", "email_time", "email_subject", "from_id", "to_id", "body"]
+            ["ID","email_id", "email_date", "email_time", "email_subject", "from_id", "to_id", "body"]
         ]
         num = 0
+        ID += 1
         for sentence in sentences:
             sentence_list = []
             try:
@@ -412,6 +424,7 @@ def write_sentences_in_excel(input_, output_):
                         if ";" in email_2:
                             email_2 = email_2.split(';')[0].strip()
                         new_db_3 = pandas.DataFrame({
+                            "ID":ID,
                             "email_id": [sentence.split(",")[0].replace('"', "")],
                             "email_date": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
                             "email_time": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
@@ -424,6 +437,7 @@ def write_sentences_in_excel(input_, output_):
                             ],
                             "body": [str(sentence_list).replace("]", "").replace("[", "")]
                         })
+                        ID += 1
                         db_3 = pandas.concat([db_3, new_db_3], ignore_index=True, axis=0)
                         num += 1
             except:
@@ -445,15 +459,14 @@ def communication_streams(input_, output_):
     sorted_communication_stream = []
     for i in list:
         for j in list:
-            if (i[4] == j[4] or j[4] == j[5]) and (i[5] == j[5] or i[5] == j[4]) and j[
-                0] not in sorted_communication_stream:
+            if (i[5] == j[5] or j[5] == j[6]) and (i[6] == j[5] or i[6] == j[6]) and j[1] not in sorted_communication_stream:
                 sorted_list.append((com_s, j))
-                sorted_communication_stream.append(j[0])
+                sorted_communication_stream.append(j[1])
         com_s += 1
     db = pandas.DataFrame({
         "id": [sorted_list.index(sorted_list[0])],
         "comm_stream_id": [sorted_list[0][0]],
-        "email_id": [sorted_list[0][1][0]]
+        "email_id": [sorted_list[0][1][1]]
     })
     new_writer_1 = pandas.ExcelWriter(output_, engine='xlsxwriter')
     db = db[
@@ -466,7 +479,7 @@ def communication_streams(input_, output_):
                 new_db = pandas.DataFrame({
                     "id": [sorted_list.index(comunication_stream)],
                     "comm_stream_id": [comunication_stream[0]],
-                    "email_id": [comunication_stream[1][0]],
+                    "email_id": [comunication_stream[1][1]],
 
                 })
                 db = pandas.concat([db, new_db], ignore_index=True, axis=0)
