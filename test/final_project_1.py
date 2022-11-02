@@ -603,7 +603,7 @@ def new_grouping_sentences(data, sentences, num):
 
             else:
                 new_data.remove(i)
-            new_func(new_data, sentences, num)
+            new_grouping_sentences(new_data, sentences, num)
             try:
                 write_sentences_in_excel("sentence_in_groups.txt", 'tbl_sentence.xlsx')
                 communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
