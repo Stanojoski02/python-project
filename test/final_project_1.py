@@ -91,7 +91,7 @@ def cleaning(text):
 
     return text
 
-#A function that extracts sentences from a string
+
 def sentence_extractor(string_):
     sentences_list = []
     data = sent_tokenize(string_)
@@ -119,8 +119,7 @@ def sentence_extractor(string_):
             sentences_list.append(txt.strip())
     return sentences_list
 
-#A function that arranges sentences for easier processing.
-#Also count their nouns adjectives verbs and Propn.
+
 def sentence_formatting(_input, _output):
     email_num = 0
     data = pd.read_csv(_input)
@@ -170,7 +169,7 @@ def sentence_formatting(_input, _output):
             pass
         email_num += 1
 
-#A function that groups sentences according to their similarity
+
 def grouping_sentences(_input, _output):
     sen = []
     print("grouping_sentences function is running")
@@ -619,7 +618,10 @@ def final_function(_input, _output):
         sentence_formatting(_input, "file.txt")
     except:
         old_sentence_formatting(_input, "file.txt")
-    grouping_sentences("file.txt", 'sentence_in_groups.txt')
+    with open('file.txt', 'r') as d:
+        data = d.readlines()
+        new_grouping_sentences(data, [], len(data))
+   # grouping_sentences("file.txt", 'sentence_in_groups.txt')
     write_sentences_in_excel("sentence_in_groups.txt", 'tbl_sentence.xlsx')
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
