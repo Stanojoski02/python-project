@@ -579,7 +579,6 @@ def new_grouping_sentences(data, sentences, num):
     new_data = data
     if data or num != 0:
         num -= 1;
-        print(num)
         for i in new_data:
             group = []
             for j in data:
