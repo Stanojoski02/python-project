@@ -617,10 +617,10 @@ def final_function(_input, _output):
         sentence_formatting(_input, "file.txt")
     except:
         old_sentence_formatting(_input, "file.txt")
-    with open('file.txt', 'r') as d:
-        data = d.readlines()
-        new_grouping_sentences(data, [], len(data))
-   # grouping_sentences("file.txt", 'sentence_in_groups.txt')
+    #with open('file.txt', 'r') as d:
+        #data = d.readlines()
+        #new_grouping_sentences(data, [], len(data))
+    grouping_sentences("file.txt", 'sentence_in_groups.txt')
     write_sentences_in_excel("sentence_in_groups.txt", 'tbl_sentence.xlsx')
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
