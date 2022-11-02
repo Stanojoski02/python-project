@@ -11,6 +11,9 @@ import numpy
 import datetime
 import openpyxl
 import pandas as pd
+import sys
+
+sys.setrecursionlimit(170000)
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -88,7 +91,7 @@ def cleaning(text):
 
     return text
 
-
+#A function that extracts sentences from a string
 def sentence_extractor(string_):
     sentences_list = []
     data = sent_tokenize(string_)
@@ -116,7 +119,8 @@ def sentence_extractor(string_):
             sentences_list.append(txt.strip())
     return sentences_list
 
-
+#A function that arranges sentences for easier processing.
+#Also count their nouns adjectives verbs and Propn.
 def sentence_formatting(_input, _output):
     email_num = 0
     data = pd.read_csv(_input)
@@ -166,7 +170,7 @@ def sentence_formatting(_input, _output):
             pass
         email_num += 1
 
-
+#A function that groups sentences according to their similarity
 def grouping_sentences(_input, _output):
     sen = []
     print("grouping_sentences function is running")
@@ -540,7 +544,38 @@ def old_sentence_formatting(_input, _output):
             except:
                 pass
             email_num += 1
-            
+
+
+def new_func(data, sentences):
+    new_data = data
+    if data:
+        for i in new_data:
+            group = []
+            for j in data:
+                if jaccard_similarity(i.split(',')[4].replace('Sentence:', '').strip().split(),
+                                      j.split(',')[4].replace('Sentence:', '').strip().split()) > 0.2 and j.split(',')[
+                    4].replace('Sentence:', '').strip() not \
+                        in sentences:
+                    sentences.append(j.split(',')[4].replace('Sentence:', '').strip())
+                    group.append((f"{j.split(',')[0]},"
+                                  f"{jaccard_similarity(j.split(',')[4].split(), i.split(',')[4].split())},"
+                                  f"{get_cosine(text_to_vector(i.split(',')[4]), text_to_vector(j.split(',')[4]))},"
+                                  f"{pylev.levenshtein(i.split(',')[4].split(), j.split(',')[4].split())},"
+                                  f"{euclidean_distance(nlp(i.split(',')[4]).vector, nlp(j.split(',')[4]).vector)},"
+                                  f"{j}\n", j))
+
+            if len(group) > 2:
+                for s in group:
+                    with open("sentence_in_groups.txt", "a") as nsn:
+                        nsn.write(f"{s[0]}")
+                        new_data.remove(s[1])
+
+            else:
+                new_data.remove(i)
+            new_func(new_data, sentences)
+    else:
+        print("Finish!")
+
 def new_grouping_sentences(data, sentences, num):
     new_data = data
     if data or num != 0:
@@ -570,6 +605,11 @@ def new_grouping_sentences(data, sentences, num):
             else:
                 new_data.remove(i)
             new_func(new_data, sentences, num)
+            try:
+                write_sentences_in_excel("sentence_in_groups.txt", 'tbl_sentence.xlsx')
+                communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
+            except:
+                pass
     else:
         print("Finish!")
 
@@ -579,8 +619,8 @@ def final_function(_input, _output):
         sentence_formatting(_input, "file.txt")
     except:
         old_sentence_formatting(_input, "file.txt")
-    grouping_sentences("file.txt", "sentence_in_groups.txt")
-    write_sentences_in_excel("sentence_in_groups.txt", _output)
+    grouping_sentences("file.txt", 'sentence_in_groups.txt')
+    write_sentences_in_excel("sentence_in_groups.txt", 'tbl_sentence.xlsx')
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
 
