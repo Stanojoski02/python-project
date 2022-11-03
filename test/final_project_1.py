@@ -242,47 +242,51 @@ def test_function(_input, _output, number_of_sentences):
 
 def write_sentences_in_excel(input_, output_):
     print("write_sentences_in_excel function is running")
+
     with open(input_, "r", encoding="charmap") as d:
         sentences = d.readlines()
-        emails = [sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower(),
-                  sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()]
-        db = pandas.DataFrame({
-            "ID": [0],
-            "date":
-                [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "")],
-            "email_id": [sentences[0].split(",")[0].replace('"', "")],
-            "from(email index)": [
-                emails.index(
-                    sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower()
-                )],
-            "to(email index)": [
-                emails.index(
-                    sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()
-                )],
-            "sentence": [sentences[0].split(",")[9].replace("Sentence:", "").strip()],
-            "propn": [sentences[0].split(",")[10].replace("PROPN:", "")],
-            "verb": [sentences[0].split(",")[11].replace("VERB:", "")],
-            "adjective": [sentences[0].split(",")[12].replace("ADJ:", "")],
-            "noun": [sentences[0].split(",")[13].replace("NOUN:", "")],
-            "jaccard_similarity": [numpy.round(float(sentences[0].split(",")[1]), 4)],
-            "cosine_similarity": [numpy.round(float(sentences[0].split(",")[2]), 4)],
-            "levenshtein_distance": [sentences[0].split(",")[3]],
-            "euclidean_distance": [numpy.round(float(sentences[0].split(",")[4]), 4)]
+        try:
+            emails = [sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower(),
+                      sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()]
+            db = pandas.DataFrame({
+                "ID": [0],
+                "date":
+                    [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "")],
+                "email_id": [sentences[0].split(",")[0].replace('"', "")],
+                "from(email index)": [
+                    emails.index(
+                        sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"', "").strip().lower()
+                    )],
+                "to(email index)": [
+                    emails.index(
+                        sentences[0].split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()
+                    )],
+                "sentence": [sentences[0].split(",")[9].replace("Sentence:", "").strip()],
+                "propn": [sentences[0].split(",")[10].replace("PROPN:", "")],
+                "verb": [sentences[0].split(",")[11].replace("VERB:", "")],
+                "adjective": [sentences[0].split(",")[12].replace("ADJ:", "")],
+                "noun": [sentences[0].split(",")[13].replace("NOUN:", "")],
+                "jaccard_similarity": [numpy.round(float(sentences[0].split(",")[1]), 4)],
+                "cosine_similarity": [numpy.round(float(sentences[0].split(",")[2]), 4)],
+                "levenshtein_distance": [sentences[0].split(",")[3]],
+                "euclidean_distance": [numpy.round(float(sentences[0].split(",")[4]), 4)]
 
-        })
-        writer = pandas.ExcelWriter(output_, engine='xlsxwriter')
-        db = db[
-            [
-                "ID", "date", "email_id", "from(email index)",
-                "to(email index)", "sentence", "propn",
-                "verb", "adjective", "noun",
-                "jaccard_similarity", "cosine_similarity",
-                "levenshtein_distance", "euclidean_distance"
+            })
+            writer = pandas.ExcelWriter(output_, engine='xlsxwriter')
+            db = db[
+                [
+                    "ID", "date", "email_id", "from(email index)",
+                    "to(email index)", "sentence", "propn",
+                    "verb", "adjective", "noun",
+                    "jaccard_similarity", "cosine_similarity",
+                    "levenshtein_distance", "euclidean_distance"
+                ]
             ]
-        ]
-        num = 0
-        ID = 1
-        number_of_sentences = 1
+            num = 0
+            ID = 1
+            number_of_sentences = 1
+        except:
+            pass
         for sentence in sentences:
             try:
                 if sentences[0] != sentence:
@@ -334,18 +338,21 @@ def write_sentences_in_excel(input_, output_):
         worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
         worksheet.set_column(0, max_col - 1, 12)
         writer.save()
-        ID = 0
-        number_of_emails = 1
-        db_2 = pandas.DataFrame({
-            "ID": [emails.index(emails[0])],
-            "email": [emails[0]]
-        })
-        new_writer = pandas.ExcelWriter("tbl_email_address.xlsx", engine='xlsxwriter')
-        db_2 = db_2[
-            ["ID", "email"]
-        ]
-        num = 0
-        ID += 1
+        try:
+            ID = 0
+            number_of_emails = 1
+            db_2 = pandas.DataFrame({
+                "ID": [emails.index(emails[0])],
+                "email": [emails[0]]
+            })
+            new_writer = pandas.ExcelWriter("tbl_email_address.xlsx", engine='xlsxwriter')
+            db_2 = db_2[
+                ["ID", "email"]
+            ]
+            num = 0
+            ID += 1
+        except:
+            pass
         for email in emails:
             try:
                 if email != emails[0]:
@@ -457,22 +464,28 @@ def communication_streams(input_, output_):
     com_s = 0
     sorted_communication_stream = []
     for i in list_of_emails:
-        for j in list_of_emails:
-            if (i[5] == j[5] or j[5] == j[6]) and (i[6] == j[5] or i[6] == j[6]) and j[
-                1] not in sorted_communication_stream:
-                sorted_list.append((com_s, j))
-                sorted_communication_stream.append(j[1])
-        com_s += 1
-    db = pandas.DataFrame({
-        "id": [sorted_list.index(sorted_list[0])],
-        "comm_stream_id": [sorted_list[0][0]],
-        "email_id": [sorted_list[0][1][1]]
-    })
-    new_writer_1 = pandas.ExcelWriter(output_, engine='xlsxwriter')
-    db = db[
-        ["id", "comm_stream_id", "email_id"]
-    ]
-    num = 0
+        try:
+            for j in list_of_emails:
+                if (i[5] == j[5] or j[5] == j[6]) and (i[6] == j[5] or i[6] == j[6]) and j[
+                    1] not in sorted_communication_stream:
+                    sorted_list.append((com_s, j))
+                    sorted_communication_stream.append(j[1])
+            com_s += 1
+        except:
+            pass
+    try:
+        db = pandas.DataFrame({
+            "id": [sorted_list.index(sorted_list[0])],
+            "comm_stream_id": [sorted_list[0][0]],
+            "email_id": [sorted_list[0][1][1]]
+        })
+        new_writer_1 = pandas.ExcelWriter(output_, engine='xlsxwriter')
+        db = db[
+            ["id", "comm_stream_id", "email_id"]
+        ]
+        num = 0
+    except:
+        pass
     for comunication_stream in sorted_list:
         if comunication_stream != sorted_list[0]:
             try:
@@ -625,4 +638,4 @@ def final_function(_input, _output):
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
 
-final_function("data.csv", "tbl_sentence.xlsx")
+final_function("makedonka.csv", "tbl_sentence.xlsx")
