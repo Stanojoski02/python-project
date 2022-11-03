@@ -638,4 +638,3 @@ def final_function(_input, _output):
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
 
-final_function("makedonka.csv", "tbl_sentence.xlsx")
