@@ -176,12 +176,20 @@ def grouping_sentences(_input, _output):
     line_num = 0
     with open(_input, "r", encoding="charmap") as d:
         data_lines = d.readlines()
+        sentences = []
+        numm = 0
+        num_of_sentence = 500
         for line in data_lines:
+            numm += len(sentences)
+            if num_of_sentence <= numm:
+                print(numm)
+                num_of_sentence += 500
             sentences = []
             if line_num % 500 == 0:
                 print(f"Grouping is up to {line_num} lines")
             line_num += 1
             for line_2 in data_lines:
+                
                 if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
                     if line_2.split(',')[4] not in sen:
                         try:
@@ -195,6 +203,7 @@ def grouping_sentences(_input, _output):
                         except:
                             pass
             if len(sentences) > 1:
+                
                 for sentence in sentences:
                     with open(_output, "a", encoding="charmap") as writer:
                         writer.write(sentence)
@@ -632,20 +641,14 @@ def new_grouping_sentences(data, sentences, num):
         print("Finish!")
 
 
-def final_function(_input, _output):
+def final_function(_input, _output, working_file_with_formated_sentences, working_file_sorted_sentences):
     try:
-        sentence_formatting(_input, "file.txt")
+        sentence_formatting(_input, working_file_with_formated_sentences)
     except:
-        old_sentence_formatting(_input, "file.txt")
-    grouping_sentences("file.txt", 'sentence_in_groups.txt')
-    write_sentences_in_excel("sentence_in_groups.txt", 'tbl_sentence.xlsx')
+        old_sentence_formatting(_input, working_file_with_formated_sentences)
+    grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences)
+    write_sentences_in_excel(working_file_sorted_sentences, 'tbl_sentence.xlsx')
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
     
-    
-#input_file(.csv/.txt)
-input_file = ''
-
-#output_file(.xlsx)
-output_file = ''
-
-final_function(input_file, output_file)
+  
+final_function("data.csv", "tbl_sentence.xlsx", "file.txt", "sentence_in_groups.txt")
