@@ -640,5 +640,12 @@ def final_function(_input, _output):
     grouping_sentences("file.txt", 'sentence_in_groups.txt')
     write_sentences_in_excel("sentence_in_groups.txt", 'tbl_sentence.xlsx')
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
+    
+    
+#input_file(.csv/.txt)
+input_file = ''
 
-final_function("emails.csv", "tbl_sentence.xlsx")
+#output_file(.xlsx)
+output_file = ''
+
+final_function(input_file, output_file)
