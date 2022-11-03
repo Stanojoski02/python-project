@@ -633,13 +633,12 @@ def new_grouping_sentences(data, sentences, num):
 
 
 def final_function(_input, _output):
-    # try:
-    #     sentence_formatting(_input, "file.txt")
-    # except:
-    #     old_sentence_formatting(_input, "file.txt")
+    try:
+        sentence_formatting(_input, "file.txt")
+    except:
+        old_sentence_formatting(_input, "file.txt")
     grouping_sentences("file.txt", 'sentence_in_groups.txt')
     write_sentences_in_excel("sentence_in_groups.txt", 'tbl_sentence.xlsx')
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
 final_function("emails.csv", "tbl_sentence.xlsx")
-
