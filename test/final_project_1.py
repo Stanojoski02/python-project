@@ -122,7 +122,7 @@ def sentence_extractor(string_):
 
 def sentence_formatting(_input, _output):
     email_num = 0
-    data = pd.read_csv(_input)
+    data = pd.read_csv(_input, encoding='charmap')
     data_lines = data.values.tolist()
     line_num = 0
     print("sentence_formatting function is running")
@@ -331,13 +331,16 @@ def write_sentences_in_excel(input_, output_):
                     number_of_sentences += 1
             except:
                 pass
-        db.to_excel(writer, sheet_name='Sheet1', startrow=1, header=False, index=False)
-        worksheet = writer.sheets['Sheet1']
-        (max_row, max_col) = db.shape
-        column_settings = [{'header': column} for column in db.columns]
-        worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
-        worksheet.set_column(0, max_col - 1, 12)
-        writer.save()
+        try:
+            db.to_excel(writer, sheet_name='Sheet1', startrow=1, header=False, index=False)
+            worksheet = writer.sheets['Sheet1']
+            (max_row, max_col) = db.shape
+            column_settings = [{'header': column} for column in db.columns]
+            worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': column_settings})
+            worksheet.set_column(0, max_col - 1, 12)
+            writer.save()
+        except:
+            pass
         try:
             ID = 0
             number_of_emails = 1
@@ -391,12 +394,16 @@ def write_sentences_in_excel(input_, output_):
         if ";" in email_2:
             email_2 = email_2.split(';')[0].strip()
         ID = 0
+        try:
+            subject = sentences[0].split(",")[14]
+        except:
+            subject = ''
         db_3 = pandas.DataFrame({
             "ID": ID,
             "email_id": [sentences[0].split(",")[0].replace('"', "")],
             "email_date": [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
             "email_time": [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
-            "email_subject": [sentences[0].split(",")[14]],
+            "email_subject": [subject],
             "from_id": [
                 emails.index(email_1)
             ],
@@ -630,11 +637,8 @@ def final_function(_input, _output):
         sentence_formatting(_input, "file.txt")
     except:
         old_sentence_formatting(_input, "file.txt")
-    #with open('file.txt', 'r') as d:
-        #data = d.readlines()
-        #new_grouping_sentences(data, [], len(data))
     grouping_sentences("file.txt", 'sentence_in_groups.txt')
     write_sentences_in_excel("sentence_in_groups.txt", 'tbl_sentence.xlsx')
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
-
+final_function("emails.csv", "tbl_sentence.xlsx")
