@@ -434,35 +434,41 @@ def write_sentences_in_excel(input_, output_):
                 if sentence.split(",")[0].replace('"', "") not in email_ids:
                     email_ids.append(sentence.split(",")[0].replace('"', ""))
                     for s in sentences:
-                        if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[
-                            9].replace("Sentence:", "").strip() not in sentence_list:
-                            sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
-                    if sentences[0] != sentence:
-                        email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"',
-                                                                                                       '').strip().lower()
-                        if ";" in email_1:
-                            email_1 = email_1.split(';')[0].strip()
-                        email_2 = sentence.split(",")[8].replace('"', "").replace("To:", "").replace('"',
-                                                                                                     '').strip().lower()
-                        if ";" in email_2:
-                            email_2 = email_2.split(';')[0].strip()
-                        new_db_3 = pandas.DataFrame({
-                            "ID": ID,
-                            "email_id": [sentence.split(",")[0].replace('"', "")],
-                            "email_date": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
-                            "email_time": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
-                            "email_subject": [sentence.split(",")[14]],
-                            "from_id": [
-                                emails.index(email_1)
-                            ],
-                            "to_id": [
-                                emails.index(email_2)
-                            ],
-                            "body": [str(sentence_list).replace("]", "").replace("[", "")]
-                        })
-                        ID += 1
-                        db_3 = pandas.concat([db_3, new_db_3], ignore_index=True, axis=0)
-                        num += 1
+                        try:
+                            if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[
+                                9].replace("Sentence:", "").strip() not in sentence_list:
+                                sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
+                        except:
+                            pass
+                    try:
+                        if sentences[0] != sentence:
+                            email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"',
+                                                                                                           '').strip().lower()
+                            if ";" in email_1:
+                                email_1 = email_1.split(';')[0].strip()
+                            email_2 = sentence.split(",")[8].replace('"', "").replace("To:", "").replace('"',
+                                                                                                         '').strip().lower()
+                            if ";" in email_2:
+                                email_2 = email_2.split(';')[0].strip()
+                            new_db_3 = pandas.DataFrame({
+                                "ID": ID,
+                                "email_id": [sentence.split(",")[0].replace('"', "")],
+                                "email_date": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
+                                "email_time": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
+                                "email_subject": [sentence.split(",")[14]],
+                                "from_id": [
+                                    emails.index(email_1)
+                                ],
+                                "to_id": [
+                                    emails.index(email_2)
+                                ],
+                                "body": [str(sentence_list).replace("]", "").replace("[", "")]
+                            })
+                            ID += 1
+                            db_3 = pandas.concat([db_3, new_db_3], ignore_index=True, axis=0)
+                            num += 1
+                    except:
+                        pass
             except:
                 pass
         db_3.to_excel(new_writer_1, sheet_name='Sheet1', startrow=1, header=False, index=False)
@@ -648,4 +654,4 @@ def final_function(_input, _output, working_file_with_formated_sentences, workin
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
 
-final_function("data.csv", "tbl_sentence.xlsx", "file.txt", "sentence_in_groups.txt")
+final_function("import.csv", "tbl_sentence.xlsx", "file.txt", "sentence_in_groups.txt")
