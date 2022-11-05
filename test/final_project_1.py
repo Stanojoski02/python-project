@@ -193,7 +193,7 @@ def grouping_sentences(_input, _output):
                 if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
                     if line_2.split(',')[4] not in sen:
                         try:
-                            sentences.append(f"{line.split(',')[0]},"
+                            sentences.append(f"{line_2.split(',')[0]},"
                                              f"{jaccard_similarity(line.split(',')[4].split(), line_2.split(',')[4].split())},"
                                              f"{get_cosine(text_to_vector(line.split(',')[4]), text_to_vector(line_2.split(',')[4]))},"
                                              f"{pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split())},"
