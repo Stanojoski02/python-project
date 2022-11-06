@@ -585,69 +585,6 @@ def old_sentence_formatting(_input, _output):
             email_num += 1
 
 
-def new_func(data, sentences):
-    new_data = data
-    if data:
-        for i in new_data:
-            group = []
-            for j in data:
-                if jaccard_similarity(i.split(',')[4].replace('Sentence:', '').strip().split(),
-                                      j.split(',')[4].replace('Sentence:', '').strip().split()) > 0.2 and j.split(',')[
-                    4].replace('Sentence:', '').strip() not \
-                        in sentences:
-                    sentences.append(j.split(',')[4].replace('Sentence:', '').strip())
-                    group.append((f"{j.split(',')[0]},"
-                                  f"{jaccard_similarity(j.split(',')[4].split(), i.split(',')[4].split())},"
-                                  f"{get_cosine(text_to_vector(i.split(',')[4]), text_to_vector(j.split(',')[4]))},"
-                                  f"{pylev.levenshtein(i.split(',')[4].split(), j.split(',')[4].split())},"
-                                  f"{euclidean_distance(nlp(i.split(',')[4]).vector, nlp(j.split(',')[4]).vector)},"
-                                  f"{j}\n", j))
-
-            if len(group) > 2:
-                for s in group:
-                    with open("sentence_in_groups.txt", "a") as nsn:
-                        nsn.write(f"{s[0]}")
-                        new_data.remove(s[1])
-
-            else:
-                new_data.remove(i)
-            new_func(new_data, sentences)
-    else:
-        print("Finish!")
-
-
-def new_grouping_sentences(data, sentences, num, sentence_in_group):
-    new_data = data
-    if data or num != 0:
-        num -= 1;
-        for i in new_data:
-            group = []
-            for j in data:
-                if jaccard_similarity(i.split(',')[4].replace('Sentence:', '').strip().split(),
-                                      j.split(',')[4].replace('Sentence:', '').strip().split()) > 0.2 and j.split(',')[
-                    4].replace('Sentence:', '').strip() not \
-                        in sentences:
-                    sentences.append(j.split(',')[4].replace('Sentence:', '').strip())
-                    group.append((f"{j.split(',')[0]},"
-                                  f"{jaccard_similarity(j.split(',')[4].split(), i.split(',')[4].split())},"
-                                  f"{get_cosine(text_to_vector(i.split(',')[4]), text_to_vector(j.split(',')[4]))},"
-                                  f"{pylev.levenshtein(i.split(',')[4].split(), j.split(',')[4].split())},"
-                                  f"{euclidean_distance(nlp(i.split(',')[4]).vector, nlp(j.split(',')[4]).vector)},"
-                                  f"{j}\n", j))
-
-            if len(group) > 2:
-                for s in group:
-                    with open(sentence_in_group, "a") as nsn:
-                        nsn.write(f"{s[0]}")
-                        new_data.remove(s[1])
-
-            else:
-                new_data.remove(i)
-            new_grouping_sentences(new_data, sentences, num, sentence_in_group)
-    else:
-        print("Finish!")
-
-
 def final_function(_input, _output, working_file_with_formated_sentences, working_file_sorted_sentences):
     #try:
         #sentence_formatting(_input, working_file_with_formated_sentences)
