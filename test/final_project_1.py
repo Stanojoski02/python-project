@@ -131,7 +131,7 @@ def sentence_formatting(_input, _output):
             for i in sentence_extractor(line[4]):
                 try:
                     if line_num % 500 == 0:
-                        print(f"Sorted and formatted sentences {line_num}")
+                        print(f"Formatted sentences {line_num}")
                     line_num += 1
                     doc = nlp(str(i))
                     propn = 0
@@ -334,7 +334,7 @@ def write_sentences_in_excel(input_, output_):
 
                     })
                     ID += 1
-                    if number_of_sentences % 100 == 0:
+                    if number_of_sentences % 1000 == 0:
                         print(f"{number_of_sentences} sentences are recorded")
                     db = pandas.concat([db, new_db], ignore_index=True, axis=0)
                     num += 1
@@ -467,6 +467,8 @@ def write_sentences_in_excel(input_, output_):
                             ID += 1
                             db_3 = pandas.concat([db_3, new_db_3], ignore_index=True, axis=0)
                             num += 1
+                            if num % 500 == 0:
+                                print(f"Emails: {num}")
                     except:
                         pass
             except:
@@ -520,6 +522,8 @@ def communication_streams(input_, output_):
                 })
                 db = pandas.concat([db, new_db], ignore_index=True, axis=0)
                 num += 1
+                if num % 500 == 0:
+                    print(f"Comunication Stream: {num}")
             except:
                 pass
     db.to_excel(new_writer_1, sheet_name='Sheet1', startrow=1, header=False, index=False)
@@ -645,13 +649,13 @@ def new_grouping_sentences(data, sentences, num, sentence_in_group):
 
 
 def final_function(_input, _output, working_file_with_formated_sentences, working_file_sorted_sentences):
-    try:
-        sentence_formatting(_input, working_file_with_formated_sentences)
-    except:
-        old_sentence_formatting(_input, working_file_with_formated_sentences)
-    grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences)
+    #try:
+        #sentence_formatting(_input, working_file_with_formated_sentences)
+    #except:
+        #old_sentence_formatting(_input, working_file_with_formated_sentences)
+    #grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences)
     write_sentences_in_excel(working_file_sorted_sentences, 'tbl_sentence.xlsx')
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
 
-final_function("import.csv", "tbl_sentence.xlsx", "file.txt", "sentence_in_groups.txt")
+final_function("emails.csv", "tbl_sentence.xlsx", "file.txt", "sentence_in_groups.txt")
