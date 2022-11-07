@@ -182,11 +182,9 @@ def grouping_sentences(_input, _output):
         for line in data_lines:
             numm += len(sentences)
             if num_of_sentence <= numm:
-                print(numm)
+                print(f"Grouping is up to {numm} lines")
                 num_of_sentence += 500
             sentences = []
-            if line_num % 500 == 0:
-                print(f"Grouping is up to {line_num} lines")
             line_num += 1
             for line_2 in data_lines:
 
@@ -586,11 +584,11 @@ def old_sentence_formatting(_input, _output):
 
 
 def final_function(_input, _output, working_file_with_formated_sentences, working_file_sorted_sentences):
-    #try:
-        #sentence_formatting(_input, working_file_with_formated_sentences)
-    #except:
-        #old_sentence_formatting(_input, working_file_with_formated_sentences)
-    #grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences)
+    try:
+        sentence_formatting(_input, working_file_with_formated_sentences)
+    except:
+        old_sentence_formatting(_input, working_file_with_formated_sentences)
+    grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences)
     write_sentences_in_excel(working_file_sorted_sentences, 'tbl_sentence.xlsx')
     communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
 
