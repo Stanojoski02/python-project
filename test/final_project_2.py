@@ -684,10 +684,10 @@ def new_grouping_sentences(_input, _output, sentence_file_name):
 
 
 def final_function(_input, _output, working_file_with_formated_sentences, working_file_sorted_sentences):
-    try:
-        sentence_formatting(_input, working_file_with_formated_sentences)
-    except:
-        old_sentence_formatting(_input, working_file_with_formated_sentences)
+    #try:
+        #sentence_formatting(_input, working_file_with_formated_sentences)
+    #except:
+        #old_sentence_formatting(_input, working_file_with_formated_sentences)
     new_grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences, 'tbl_sentence')
 
 
