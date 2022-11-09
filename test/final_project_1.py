@@ -173,6 +173,7 @@ def sentence_formatting(_input, _output):
 def grouping_sentences(_input, _output):
     sen = []
     print("grouping_sentences function is running")
+    new_sentence_num = 0
     line_num = 0
     with open(_input, "r", encoding="charmap") as d:
         data_lines = d.readlines()
@@ -181,9 +182,6 @@ def grouping_sentences(_input, _output):
         num_of_sentence = 500
         for line in data_lines:
             numm += len(sentences)
-            if num_of_sentence <= numm:
-                print(f"Grouping is up to {numm} lines")
-                num_of_sentence += 500
             sentences = []
             line_num += 1
             for line_2 in data_lines:
@@ -201,10 +199,12 @@ def grouping_sentences(_input, _output):
                         except:
                             pass
             if len(sentences) > 1:
-
                 for sentence in sentences:
                     with open(_output, "a", encoding="charmap") as writer:
                         writer.write(sentence)
+                        new_sentence_num += 1
+                        if new_sentence_num % 500 == 0:
+                            print(new_sentence_num)
 
 
 def test_function(_input, _output, number_of_sentences):
@@ -247,7 +247,7 @@ def test_function(_input, _output, number_of_sentences):
                         writer.write(sentence)
 
 
-def write_sentences_in_excel(input_, output_):
+def write_sentences_in_excel(input_, tbl_sentences, tbl_email_address, tbl_email):
     print("write_sentences_in_excel function is running")
 
     with open(input_, "r", encoding="charmap") as d:
@@ -280,7 +280,7 @@ def write_sentences_in_excel(input_, output_):
                 "euclidean_distance": [numpy.round(float(sentences[0].split(",")[4]), 4)]
 
             })
-            writer = pandas.ExcelWriter(output_, engine='xlsxwriter')
+            writer = pandas.ExcelWriter(tbl_sentences, engine='xlsxwriter')
             db = db[
                 [
                     "ID", "date", "email_id", "from(email index)",
@@ -356,7 +356,7 @@ def write_sentences_in_excel(input_, output_):
                 "ID": [emails.index(emails[0])],
                 "email": [emails[0]]
             })
-            new_writer = pandas.ExcelWriter("tbl_email_address.xlsx", engine='xlsxwriter')
+            new_writer = pandas.ExcelWriter(tbl_email_address, engine='xlsxwriter')
             db_2 = db_2[
                 ["ID", "email"]
             ]
@@ -420,7 +420,7 @@ def write_sentences_in_excel(input_, output_):
             ],
             "body": [str(sentence_list).replace("]", "").replace("[", "")]
         })
-        new_writer_1 = pandas.ExcelWriter("tbl_email.xlsx", engine='xlsxwriter')
+        new_writer_1 = pandas.ExcelWriter(tbl_email, engine='xlsxwriter')
         db_3 = db_3[
             ["ID", "email_id", "email_date", "email_time", "email_subject", "from_id", "to_id", "body"]
         ]
@@ -433,8 +433,9 @@ def write_sentences_in_excel(input_, output_):
                     email_ids.append(sentence.split(",")[0].replace('"', ""))
                     for s in sentences:
                         try:
-                            if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and s.split(",")[
-                                9].replace("Sentence:", "").strip() not in sentence_list:
+                            if sentence.split(",")[0].replace('"', "") == s.split(",")[0].replace('"', "") and \
+                                    s.split(",")[
+                                        9].replace("Sentence:", "").strip() not in sentence_list:
                                 sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
                         except:
                             pass
@@ -451,8 +452,10 @@ def write_sentences_in_excel(input_, output_):
                             new_db_3 = pandas.DataFrame({
                                 "ID": ID,
                                 "email_id": [sentence.split(",")[0].replace('"', "")],
-                                "email_date": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
-                                "email_time": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
+                                "email_date": [
+                                    sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
+                                "email_time": [
+                                    sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
                                 "email_subject": [sentence.split(",")[14]],
                                 "from_id": [
                                     emails.index(email_1)
@@ -583,14 +586,37 @@ def old_sentence_formatting(_input, _output):
             email_num += 1
 
 
-def final_function(_input, _output, working_file_with_formated_sentences, working_file_sorted_sentences):
-    try:
-        sentence_formatting(_input, working_file_with_formated_sentences)
-    except:
-        old_sentence_formatting(_input, working_file_with_formated_sentences)
+def final_function(_input, tbl_sentence, tbl_email_address, tbl_email, comm_stream, working_file_with_formated_sentences,
+                   working_file_sorted_sentences):
+    #try:
+        #sentence_formatting(_input, working_file_with_formated_sentences)
+    #except:
+        #old_sentence_formatting(_input, working_file_with_formated_sentences)
     grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences)
-    write_sentences_in_excel(working_file_sorted_sentences, 'tbl_sentence.xlsx')
-    communication_streams('tbl_email.xlsx', 'tbl_communication_stream.xlsx')
+    write_sentences_in_excel(working_file_sorted_sentences, tbl_sentence, tbl_email_address, tbl_email)
+    communication_streams(tbl_email, comm_stream)
 
 
-final_function("emails.csv", "tbl_sentence.xlsx", "file.txt", "sentence_in_groups.txt")
+#wirking files:
+formatted_sentence = 'file.txt'
+grouped_sentence = "sentence_in_group.txt"
+
+#data:
+data_with_emails = "emails.csv"
+
+#tbl:
+tbl_with_sentence = "tbl_sentence.xlsx"
+tbl_email_address = "tbl_email_address.xlsx"
+tbl_email = "tbl_email.xlsx"
+tbl_communication_stream = 'tbl_communication_stream.xlsx'
+
+
+final_function(
+    data_with_emails,
+    tbl_with_sentence,
+    tbl_email_address,
+    tbl_email,
+    tbl_communication_stream,
+    formatted_sentence,
+    grouped_sentence
+)
