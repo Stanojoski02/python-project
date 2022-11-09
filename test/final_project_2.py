@@ -516,7 +516,7 @@ def communication_streams(input_, output_, file_num):
             "comm_stream_id": [sorted_list[0][0]],
             "email_id": [sorted_list[0][1][1]]
         })
-        new_writer_1 = pandas.ExcelWriter(output_ + f"_{file_num}.xlsx", engine='xlsxwriter')
+        new_writer_1 = pandas.ExcelWriter(output_, engine='xlsxwriter')
         db = db[
             ["id", "comm_stream_id", "email_id"]
         ]
