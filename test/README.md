@@ -1,5 +1,5 @@
 ![f](https://user-images.githubusercontent.com/97593843/198311719-fa35eff5-2f5a-4c29-9b0c-5c3cfe0d54ac.png): 
-# Jaccard Similarity![Screenshot (23)]:
+# Jaccard Similarity:
 https://newscatcherapi.com/blog/ultimate-guide-to-text-similarity-with-python
 # Cosine Similarity:
 https://stackoverflow.com/questions/15173225/calculate-cosine-similarity-given-2-sentence-strings
