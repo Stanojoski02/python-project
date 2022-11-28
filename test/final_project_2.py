@@ -267,7 +267,7 @@ def write_sentences_in_excel(input_, output_, file_num):
                 "ID": [0],
                 "date":
                     [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "")],
-                "email_id": [sentences[0].split(",")[0].replace('"', "")],
+                "email_id": ["EMID" + str(sentences[0].split(",")[0].replace('"', ""))],
                 "from(email index)": [
                     emails.index(
                         sentences[0].split(",")[7].replace('"', "").replace("From:", "").replace('"',
@@ -321,7 +321,7 @@ def write_sentences_in_excel(input_, output_, file_num):
                     new_db = pandas.DataFrame({
                         "ID": ID,
                         "date": [sentence.split(",")[6].replace('"', "").replace("DateTime:", "")],
-                        "email_id": [sentence.split(",")[0].replace('"', "")],
+                        "email_id": ["EMID"+ str(sentence.split(",")[0].replace('"', ""))],
                         "from(email index)": [
                             emails.index(email_1)
                         ],
@@ -416,7 +416,7 @@ def write_sentences_in_excel(input_, output_, file_num):
             subject = ''
         db_3 = pandas.DataFrame({
             "ID": ID,
-            "email_id": [sentences[0].split(",")[0].replace('"', "")],
+            "email_id": ["EMID" + str(sentences[0].split(",")[0].replace('"', ""))],
             "email_date": [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
             "email_time": [sentences[0].split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]],
             "email_subject": [subject],
@@ -462,7 +462,7 @@ def write_sentences_in_excel(input_, output_, file_num):
                                 email_2 = email_2.split(';')[0].strip()
                             new_db_3 = pandas.DataFrame({
                                 "ID": ID,
-                                "email_id": [sentence.split(",")[0].replace('"', "")],
+                                "email_id": ["EMID" + str(sentence.split(",")[0].replace('"', ""))],
                                 "email_date": [
                                     sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]],
                                 "email_time": [
@@ -513,7 +513,7 @@ def communication_streams(input_, output_, file_num):
     try:
         db = pandas.DataFrame({
             "id": [sorted_list.index(sorted_list[0])],
-            "comm_stream_id": [sorted_list[0][0]],
+            "comm_stream_id": ["COMM"+str(sorted_list[0][0])],
             "email_id": [sorted_list[0][1][1]]
         })
         new_writer_1 = pandas.ExcelWriter(output_, engine='xlsxwriter')
@@ -528,7 +528,7 @@ def communication_streams(input_, output_, file_num):
             try:
                 new_db = pandas.DataFrame({
                     "id": [sorted_list.index(comunication_stream)],
-                    "comm_stream_id": [comunication_stream[0]],
+                    "comm_stream_id": ["COMM"+str(comunication_stream[0])],
                     "email_id": [comunication_stream[1][1]],
 
                 })
@@ -634,7 +634,7 @@ def new_func(data, sentences):
 
 def new_grouping_sentences(_input, _output, sentence_file_name):
     sen = []
-    bg = 3000
+    bg = 500
     file_num = 0
     print("grouping_sentences function is running")
     line_num = 0
@@ -671,23 +671,22 @@ def new_grouping_sentences(_input, _output, sentence_file_name):
                         real_num += 1
                         if real_num % 500 == 0:
                             print(f"Sentence: {real_num}")
-                        if real_num >= bg:
                             write_sentences_in_excel(_output,
                                                      sentence_file_name.replace('.xlsx', '') + f'_{file_num}.xlsx',
                                                      file_num)
                             communication_streams(f'tbl_email_{file_num}.xlsx',
                                                   f'tbl_communication_stream_{file_num}.xlsx', file_num)
-                            bg += 3000
+                            bg += 500
                             file_num += 1
                             with open(_output, 'w') as dell:
                                 dell.write("")
 
 
 def final_function(_input, _output, working_file_with_formated_sentences, working_file_sorted_sentences):
-    #try:
-        #sentence_formatting(_input, working_file_with_formated_sentences)
-    #except:
-        #old_sentence_formatting(_input, working_file_with_formated_sentences)
+    try:
+        sentence_formatting(_input, working_file_with_formated_sentences)
+    except:
+        old_sentence_formatting(_input, working_file_with_formated_sentences)
     new_grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences, 'tbl_sentence')
 
 
