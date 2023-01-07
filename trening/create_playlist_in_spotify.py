@@ -19,8 +19,8 @@ def create_playlist(year):
         songs.remove(element)
     print(songs)
     driver.get("https://accounts.spotify.com/en/login?continue=https%3A%2F%2Fopen.spotify.com%2F")
-    email = "stanojoskibojan02@gmail.com"
-    password = "Bojanbojan123."
+    email = ""
+    password = ""
     email_element = driver.find_element(By.ID, 'login-username')
     email_element.send_keys(email)
     password_element = driver.find_element(By.ID, "login-password")
