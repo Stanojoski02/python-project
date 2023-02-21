@@ -494,9 +494,9 @@ def new_grouping_sentences(_input, _output, sentence_file_name):
                         if real_num % 500 == 0:
                             print(f"Sentence: {real_num}")
                             write_sentences_in_sqlite(_output,
-                                                      "tablesAs.db",
+                                                      "tables.db",
                                                       file_num)
-                            communication_streams(f'tablesAs.db', file_num)
+                            communication_streams(f'tables.db', file_num)
                             bg += 500
                             file_num += 1
                             with open(_output, 'w') as dell:
