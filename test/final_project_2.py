@@ -5,15 +5,18 @@ import pandas
 import math
 import re
 from collections import Counter
-import pylev
 from math import sqrt, pow
-import numpy
 import datetime
 import openpyxl
 import sys
 import sqlite3
 import pandas as pd
 import numpy
+import numpy as np
+from tqdm import tqdm
+import pylev
+
+
 
 sys.setrecursionlimit(170000)
 
@@ -172,89 +175,7 @@ def sentence_formatting(_input, _output):
         email_num += 1
 
 
-def grouping_sentences(_input, _output):
-    sen = []
-    print("grouping_sentences function is running")
-    line_num = 0
-    with open(_input, "r", encoding="charmap") as d:
-        if str(type(_input)) == "<class 'list'>":
-            data_lines = _input
-        else:
-            data_lines = d.readlines()
-        sentences = []
-        numm = 0
-        num_of_sentence = 500
-        for line in data_lines:
-            numm += len(sentences)
-            if num_of_sentence <= numm:
-                print(numm)
-                num_of_sentence += 500
-            sentences = []
-            if line_num % 500 == 0:
-                print(f"Grouping is up to {line_num} lines")
-            line_num += 1
-            for line_2 in data_lines:
-
-                if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
-                    if line_2.split(',')[4] not in sen:
-                        try:
-                            sentences.append(f"{line_2.split(',')[0]},"
-                                             f"{jaccard_similarity(line.split(',')[4].split(), line_2.split(',')[4].split())},"
-                                             f"{get_cosine(text_to_vector(line.split(',')[4]), text_to_vector(line_2.split(',')[4]))},"
-                                             f"{pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split())},"
-                                             f"{euclidean_distance(nlp(line.split(',')[4]).vector, nlp(line_2.split(',')[4]).vector)},"
-                                             f"{line_2}\n")
-                            sen.append(line_2.split(',')[4])
-                        except:
-                            pass
-            if len(sentences) > 1:
-
-                for sentence in sentences:
-                    with open(_output, "a", encoding="charmap") as writer:
-                        writer.write(sentence)
-
-
-def test_function(_input, _output, number_of_sentences):
-    sen = []
-    begin_time = datetime.datetime.now()
-    print("grouping_sentences function is running")
-    line_num = 0
-    with open(_input, "r", encoding="charmap") as d:
-        data_lines = d.readlines()
-        num_of_sentences = 0
-        for line in data_lines:
-            sentences = []
-            num_of_sentences_in_group = 0
-            if num_of_sentences >= number_of_sentences:
-                time_for_running = datetime.datetime.now() - begin_time
-                print(
-                    f"{int(number_of_sentences / time_for_running.total_seconds() * 60)} sentences per minute are grouped")
-                print(f"{int(number_of_sentences / time_for_running.total_seconds())} sentences per second are grouped")
-                break
-            line_num += 1
-            for line_2 in data_lines:
-                if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
-                    if line_2.split(',')[4] not in sen:
-                        try:
-                            sentences.append(f"{line.split(',')[0]},"
-                                             f"{jaccard_similarity(line.split(',')[4].split(), line_2.split(',')[4].split())},"
-                                             f"{get_cosine(text_to_vector(line.split(',')[4]), text_to_vector(line_2.split(',')[4]))},"
-                                             f"{pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split())},"
-                                             f"{euclidean_distance(nlp(line.split(',')[4]).vector, nlp(line_2.split(',')[4]).vector)},"
-                                             f"{line_2}\n")
-                            sen.append(line_2.split(',')[4])
-                            num_of_sentences_in_group += 1
-
-                        except:
-                            pass
-            if len(sentences) > 1:
-                num_of_sentences += num_of_sentences_in_group
-                for sentence in sentences:
-                    with open(_output, "a", encoding="charmap") as writer:
-                        writer.write(sentence)
-
-
-def write_sentences_in_sqlite(input_, output_, file_num):
+def write_sentences_in_sqlite(input_, output_):
     print("write_sentences_in_sqlite function is running")
 
     with open(input_, "r", encoding="charmap") as d:
@@ -419,6 +340,82 @@ def write_sentences_in_sqlite(input_, output_, file_num):
         conn.close()
 
 
+        # Insert the emails into the table
+        for email in emails:
+            try:
+                if email != emails[0]:
+                    if number_of_emails % 100 == 0:
+                        print(f"{number_of_emails} email addresses are recorded")
+                    number_of_emails += 1
+                    cursor.execute(f"INSERT INTO tbl_email_address (ID, email) VALUES (?, ?)", (ID, email))
+                    ID += 1
+            except:
+                pass
+
+        # Commit the changes and close the connection
+        conn.commit()
+        conn.close()
+        sentence_list = []
+        email_ids = []
+        ID = 0
+
+        # Connect to the database
+        conn = sqlite3.connect(output_)
+        cursor = conn.cursor()
+
+        # Create the email table if it doesn't exist
+        cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS tbl_email (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email_id TEXT NOT NULL,
+            email_date TEXT NOT NULL,
+            email_time TEXT NOT NULL,
+            email_subject TEXT,
+            from_id INTEGER NOT NULL,
+            to_id INTEGER NOT NULL,
+            body TEXT NOT NULL
+        )
+        """)
+
+        # Iterate over the sentences
+        for sentence in sentences:
+            sentence_list = []
+            email_id = sentence.split(",")[0].replace('"', "")
+            if email_id not in email_ids:
+                email_ids.append(email_id)
+            try:
+                for s in sentences:
+                    s_email_id = s.split(",")[0].replace('"', "")
+                    if s_email_id == email_id and s.split(",")[9].replace("Sentence:", "").strip() not in sentence_list:
+                        sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
+                email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"', '').strip().lower()
+                email_1 = email_1.split(';')[0].strip() if ";" in email_1 else email_1
+                email_2 = sentence.split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()
+                email_2 = email_2.split(';')[0].strip() if ";" in email_2 else email_2
+                subject = sentence.split(",")[14] if len(sentence.split(",")) > 14 else ''
+                body = str(sentence_list).replace("]", "").replace("[", "")
+                email_date = sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]
+                email_time = sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]
+                # Insert the email data into the database
+                try:
+                    cursor.execute(f"""
+                    INSERT INTO tbl_email (email_id, email_date, email_time, email_subject, from_id, to_id, body)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                    "EMID" + email_id, email_date, email_time, subject, emails.index(email_1), emails.index(email_2),
+                    body))
+                    ID += 1
+                except:
+                    pass
+            except:
+                pass
+        # Commit the changes to the database and close the connection
+        try:
+            conn.commit()
+        except:
+            conn.close()
+
+
 def communication_streams(output_):
     conn = sqlite3.connect(output_)
     data = pd.read_sql(f"SELECT * FROM tbl_email", conn)
@@ -439,7 +436,7 @@ def communication_streams(output_):
 
     db = pd.DataFrame({
         "id": [sorted_list.index(sorted_list[0])],
-        "comm_stream_id": ["COMM"+str(sorted_list[0][0])],
+        "comm_stream_id": ["COMM" + str(sorted_list[0][0])],
         "email_id": [sorted_list[0][1][1]]
     })
 
@@ -448,7 +445,7 @@ def communication_streams(output_):
             try:
                 new_db = pd.DataFrame({
                     "id": [sorted_list.index(comunication_stream)],
-                    "comm_stream_id": ["COMM"+str(comunication_stream[0])],
+                    "comm_stream_id": ["COMM" + str(comunication_stream[0])],
                     "email_id": [comunication_stream[1][1]],
                 })
                 db = pd.concat([db, new_db], ignore_index=True, axis=0)
@@ -510,95 +507,63 @@ def old_sentence_formatting(_input, _output):
             email_num += 1
 
 
-def new_func(data, sentences):
-    new_data = data
-    real_num = 0
-    if data:
-        for i in new_data:
-            group = []
-            for j in data:
-                if jaccard_similarity(i.split(',')[4].replace('Sentence:', '').strip().split(),
-                                      j.split(',')[4].replace('Sentence:', '').strip().split()) > 0.2 and j.split(',')[
-                    4].replace('Sentence:', '').strip() not \
-                        in sentences:
-                    sentences.append(j.split(',')[4].replace('Sentence:', '').strip())
-                    group.append((f"{j.split(',')[0]},"
-                                  f"{jaccard_similarity(j.split(',')[4].split(), i.split(',')[4].split())},"
-                                  f"{get_cosine(text_to_vector(i.split(',')[4]), text_to_vector(j.split(',')[4]))},"
-                                  f"{pylev.levenshtein(i.split(',')[4].split(), j.split(',')[4].split())},"
-                                  f"{euclidean_distance(nlp(i.split(',')[4]).vector, nlp(j.split(',')[4]).vector)},"
-                                  f"{j}\n", j))
-
-            if len(group) > 2:
-                for s in group:
-                    with open("sentence_in_groups.txt", "a") as nsn:
-                        nsn.write(f"{s[0]}")
-                        new_data.remove(s[1])
-
-            else:
-                new_data.remove(i)
-            new_func(new_data, sentences)
-    else:
-        print("Finish!")
-
-
-def new_grouping_sentences(_input, _output, sentence_file_name):
-    sen = []
+def new_grouping_sentences(_input, _output):
     bg = 500
-    file_num = 0
-    print("grouping_sentences function is running")
-    line_num = 0
+    sentences = []
+    sen = set()
     with open(_input, "r", encoding="charmap") as d:
-        if str(type(_input)) == "<class 'list'>":
+        if isinstance(_input, list):
             data_lines = _input
         else:
             data_lines = d.readlines()
-        sentences = []
-        numm = 0
         real_num = 0
-        for line in data_lines:
-            numm += len(sentences)
-            sentences = []
+        for line in tqdm(data_lines):
+            line_split = line.split(",")
+            line_vector = np.array(nlp(line_split[4]).vector)
+            line_words = line_split[4].split()
             for line_2 in data_lines:
-
-                if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
-                    if line_2.split(',')[4] not in sen:
-                        try:
-                            sentences.append(f"{line_2.split(',')[0]},"
-                                             f"{jaccard_similarity(line.split(',')[4].split(), line_2.split(',')[4].split())},"
-                                             f"{get_cosine(text_to_vector(line.split(',')[4]), text_to_vector(line_2.split(',')[4]))},"
-                                             f"{pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split())},"
-                                             f"{euclidean_distance(nlp(line.split(',')[4]).vector, nlp(line_2.split(',')[4]).vector)},"
-                                             f"{line_2}\n")
-                            sen.append(line_2.split(',')[4])
-                        except:
-                            pass
+                line_2_split = line_2.split(",")
+                line_2_words = line_2_split[4].split()
+                if jaccard_similarity(line_words, line_2_words) > 0.2 and line_2_split[4] not in sen:
+                    try:
+                        line_2_vector = np.array(nlp(line_2_split[4]).vector)
+                        jaccard_sim = jaccard_similarity(line_words, line_2_words)
+                        cosine_sim = get_cosine(text_to_vector(line_split[4]), text_to_vector(line_2_split[4]))
+                        levenshtein_dist = pylev.levenshtein(line_words, line_2_words)
+                        euclidean_dist = np.linalg.norm(line_vector - line_2_vector)
+                        sentences.append(f"{line_2_split[0]},"
+                                         f"{jaccard_sim},"
+                                         f"{cosine_sim},"
+                                         f"{levenshtein_dist},"
+                                         f"{euclidean_dist},"
+                                         f"{line_2}\n")
+                        sen.add(line_2_split[4])
+                    except:
+                        pass
             if len(sentences) > 1:
-                for sentence in sentences:
-                    with open(_output, "a", encoding="charmap") as writer:
-                        writer.write(sentence)
-                        real_num += 1
-                        if real_num % 500 == 0:
-                            print(f"Sentence: {real_num}")
-                            bg += 500
+                with open(_output, "a", encoding="charmap") as writer:
+                    writer.writelines(sentences)
+                    real_num += len(sentences)
+                    sentences = []
+                    if real_num % 500 == 0:
+                        bg += 500
+    return real_num
 
 
-
-def final_function(_input, _output, working_file_with_formated_sentences, working_file_sorted_sentences, db_name):
+def final_function(_input, working_file_with_formated_sentences, working_file_sorted_sentences, db_name):
     try:
         sentence_formatting(_input, working_file_with_formated_sentences)
     except:
         old_sentence_formatting(_input, working_file_with_formated_sentences)
-    print("BOjan")
-    new_grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences, 'tbl_sentence')
-    write_sentences_in_sqlite(sentence_in_groups, db_name, 0)
+    print("The new_grouping_sentences function just started")
+    new_grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences)
+    write_sentences_in_sqlite(sentence_in_groups, db_name)
     communication_streams(db_name)
- 
 
 
 data_with_emails = "emails.csv"
-formated_sentence = "file.txt"
-sentence_in_groups = "groups.txt"
+formated_sentence = "file.csv"
+sentence_in_groups = "groups.csv"
 db_name = "tables.db"
 
-final_function(data_with_emails, tbl_sentence, formated_sentence, sentence_in_groups, db_name)
+final_function(data_with_emails, formated_sentence, sentence_in_groups, db_name)
