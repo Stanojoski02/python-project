@@ -190,8 +190,6 @@ def write_sentences_in_sqlite(input_, output_):
         for sentence in sentences:
             if sentence.split(",") != ['\n']:
                 try:
-                    if sentence == sentences[0]:
-                        continue
                     email_1 = sentence.strip().split(",")[7].replace('"', "").replace("From:", "").replace('"',
                                                                                                            '').strip().lower()
 
@@ -503,61 +501,43 @@ def old_sentence_formatting(_input, _output):
                 pass
             email_num += 1
 
+from collections import Counter
 
 def new_grouping_sentences(_input, _output):
-    bg = 500
-    sentences = []
     sen = set()
-    used_lines = set()  # create a set to store the used lines
+    counter = Counter()
     with open(_input, "r", encoding="charmap") as d:
-        if isinstance(_input, list):
-            data_lines = _input
-        else:
-            data_lines = d.readlines()
-        real_num = 0 
-        for i, line in tqdm(enumerate(data_lines)):
-            line_split = line.split(",")
-            line_vector = np.array(nlp(line_split[4]).vector)
-            line_words = line_split[4].split()
-            for j, line_2 in enumerate(data_lines[i+1:], start=i+1):
-                if line_2 in used_lines:  # check if line_2 is already used
-                    continue
-                line_2_split = line_2.split(",")
-                line_2_words = line_2_split[4].split()
-                if jaccard_similarity(line_words, line_2_words) > 0.2 and line_2_split[4] not in sen:
-                    try:
-                        if line_split[4] not in sen:
-                            sentences.append(f"{line_split[0]},"
-                                             f"1.0,"
-                                             f"1.0,"
-                                             f"0,"
-                                             f"0,"
-                                             f"{line}\n")
-                            sen.add(line_split[4])
-                        
-                        line_2_vector = np.array(nlp(line_2_split[4]).vector)
-                        jaccard_sim = jaccard_similarity(line_words, line_2_words)
-                        cosine_sim = get_cosine(text_to_vector(line_split[4]), text_to_vector(line_2_split[4]))
-                        levenshtein_dist = pylev.levenshtein(line_words, line_2_words)
-                        euclidean_dist = np.linalg.norm(line_vector - line_2_vector)
-                        sentences.append(f"{line_2_split[0]},"
-                                         f"{jaccard_sim},"
-                                         f"{cosine_sim},"
-                                         f"{levenshtein_dist},"
-                                         f"{euclidean_dist},"
-                                         f"{line_2}\n")
-                        sen.add(line_2_split[4])
-                        used_lines.add(line_2)  # add line_2 to used_lines
-                    except:
-                        pass
+        data_lines = d.readlines()
+        sentences = []
+        for line in data_lines:
+            sentences = []
+            for line_2 in data_lines:
+                if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
+                    if line_2.split(',')[4] not in sen:
+                        try:
+                            sentence = "{},{:.4f},{:.4f},{},{:.4f},{}\n".format(
+                                line_2.split(',')[0],
+                                jaccard_similarity(line.split(',')[4].split(), line_2.split(',')[4].split()),
+                                get_cosine(text_to_vector(line.split(',')[4]), text_to_vector(line_2.split(',')[4])),
+                                pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split()),
+                                euclidean_distance(nlp(line.split(',')[4]).vector, nlp(line_2.split(',')[4]).vector),
+                                line_2)
+                            sentences.append(sentence)
+                            sen.add(line_2.split(',')[4])
+                        except:
+                            pass
             if len(sentences) > 1:
-                with open(_output, "a", encoding="charmap") as writer:
-                    writer.writelines(sentences)
-                    real_num += len(sentences)
-                    sentences = []
-            data_lines = data_lines[j+1:]
-    return real_num
+                for sentence in sentences:
+                    with open(_output, "a", encoding="charmap") as writer:
+                        writer.write(sentence)
+                        counter.update({'count': 1})
+                        if counter['count'] % 500 == 0:
+                            print(f"Sentence: {counter['count']}")
+        else:
+            print("grouping_sentences function is done")
 
+            
+            
 
 
 def final_function(_input, working_file_with_formated_sentences, working_file_sorted_sentences, db_name):
@@ -573,7 +553,7 @@ def final_function(_input, working_file_with_formated_sentences, working_file_so
 
 data_with_emails = "emails.csv"
 formated_sentence = "formated_sentence.csv"
-sentence_in_groups = "sentences_in_groups.csv"
+sentence_in_groups = "sentence_in_groups.csv"
 db_name = "tables.db"
 
 final_function(data_with_emails, formated_sentence, sentence_in_groups, db_name)
