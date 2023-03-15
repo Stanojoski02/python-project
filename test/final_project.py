@@ -1,24 +1,17 @@
 import spacy
 from nltk.tokenize import sent_tokenize
 import string
-import pandas
 import math
 import re
-from collections import Counter
 from math import sqrt, pow
-import datetime
-import openpyxl
 import sys
 import sqlite3
 import pandas as pd
 import numpy
-import numpy as np
 from tqdm import tqdm
 import pylev
+from collections import Counter
 
-
-
-sys.setrecursionlimit(170000)
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -188,55 +181,58 @@ def write_sentences_in_sqlite(input_, output_):
         data = []
         email_1 = ""
         for sentence in sentences:
-            if sentence.split(",") != ['\n']:
-                try:
-                    email_1 = sentence.strip().split(",")[7].replace('"', "").replace("From:", "").replace('"',
-                                                                                                           '').strip().lower()
+            try:
+                if sentence.split(",") != ['\n']:
+                    try:
+                        email_1 = sentence.strip().split(",")[7].replace('"', "").replace("From:", "").replace('"',
+                                                                                                               '').strip().lower()
 
-                    if ";" in email_1:
-                        email_1 = email_1.split(';')[0].strip()
-                    email_2 = sentence.split(",")[8].replace('"', "").replace("To:", "").replace('"',
-                                                                                                 '').strip().lower()
-                    if ";" in email_2:
-                        email_2 = email_2.split(';')[0].strip()
-                    if email_1 not in emails:
-                        emails.append(email_1)
-                    if email_2 not in emails:
-                        emails.append(email_2)
-                    if [
-                        sentence.split(",")[0].replace('"', ""),
-                        sentence.split(",")[6].replace('"', "").replace("DateTime:", ""),
-                        "EMID" + str(sentence.split(",")[0].replace('"', "")),
-                        emails.index(email_1),
-                        emails.index(email_2),
-                        sentence.split(",")[9].replace("Sentence:", "").strip(),
-                        sentence.split(",")[10].replace("PROPN:", ""),
-                        sentence.split(",")[11].replace("VERB:", ""),
-                        sentence.split(",")[12].replace("ADJ:", ""),
-                        sentence.split(",")[13].replace("NOUN:", ""),
-                        numpy.round(float(sentence.split(",")[1]), 4),
-                        numpy.round(float(sentence.split(",")[2]), 4),
-                        sentence.split(",")[3],
-                        numpy.round(float(sentence.split(",")[4]), 4)
-                    ] not in data:
-                        data.append([
-                        sentence.split(",")[0].replace('"', ""),
-                        sentence.split(",")[6].replace('"', "").replace("DateTime:", ""),
-                        "EMID" + str(sentence.split(",")[0].replace('"', "")),
-                        emails.index(email_1),
-                        emails.index(email_2),
-                        sentence.split(",")[9].replace("Sentence:", "").strip(),
-                        sentence.split(",")[10].replace("PROPN:", ""),
-                        sentence.split(",")[11].replace("VERB:", ""),
-                        sentence.split(",")[12].replace("ADJ:", ""),
-                        sentence.split(",")[13].replace("NOUN:", ""),
-                        numpy.round(float(sentence.split(",")[1]), 4),
-                        numpy.round(float(sentence.split(",")[2]), 4),
-                        sentence.split(",")[3],
-                        numpy.round(float(sentence.split(",")[4]), 4)
-                    ])
-                except:
-                    pass
+                        if ";" in email_1:
+                            email_1 = email_1.split(';')[0].strip()
+                        email_2 = sentence.split(",")[8].replace('"', "").replace("To:", "").replace('"',
+                                                                                                     '').strip().lower()
+                        if ";" in email_2:
+                            email_2 = email_2.split(';')[0].strip()
+                        if email_1 not in emails:
+                            emails.append(email_1)
+                        if email_2 not in emails:
+                            emails.append(email_2)
+                        if [
+                            sentence.split(",")[0].replace('"', ""),
+                            sentence.split(",")[6].replace('"', "").replace("DateTime:", ""),
+                            "EMID" + str(sentence.split(",")[0].replace('"', "")),
+                            emails.index(email_1),
+                            emails.index(email_2),
+                            sentence.split(",")[9].replace("Sentence:", "").strip(),
+                            sentence.split(",")[10].replace("PROPN:", ""),
+                            sentence.split(",")[11].replace("VERB:", ""),
+                            sentence.split(",")[12].replace("ADJ:", ""),
+                            sentence.split(",")[13].replace("NOUN:", ""),
+                            numpy.round(float(sentence.split(",")[1]), 4),
+                            numpy.round(float(sentence.split(",")[2]), 4),
+                            sentence.split(",")[3],
+                            numpy.round(float(sentence.split(",")[4]), 4)
+                        ] not in data:
+                            data.append([
+                                sentence.split(",")[0].replace('"', ""),
+                                sentence.split(",")[6].replace('"', "").replace("DateTime:", ""),
+                                "EMID" + str(sentence.split(",")[0].replace('"', "")),
+                                emails.index(email_1),
+                                emails.index(email_2),
+                                sentence.split(",")[9].replace("Sentence:", "").strip(),
+                                sentence.split(",")[10].replace("PROPN:", ""),
+                                sentence.split(",")[11].replace("VERB:", ""),
+                                sentence.split(",")[12].replace("ADJ:", ""),
+                                sentence.split(",")[13].replace("NOUN:", ""),
+                                numpy.round(float(sentence.split(",")[1]), 4),
+                                numpy.round(float(sentence.split(",")[2]), 4),
+                                sentence.split(",")[3],
+                                numpy.round(float(sentence.split(",")[4]), 4)
+                            ])
+                    except:
+                        pass
+            except:
+                pass
 
         df = pd.DataFrame(data, columns=[
             "ID", "date", "email_id", "from(email index)",
@@ -326,8 +322,9 @@ def write_sentences_in_sqlite(input_, output_):
                     INSERT INTO tbl_email (email_id, email_date, email_time, email_subject, from_id, to_id, body)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                     """, (
-                    "EMID" + email_id, email_date, email_time, subject, emails.index(email_1), emails.index(email_2),
-                    body))
+                        "EMID" + email_id, email_date, email_time, subject, emails.index(email_1),
+                        emails.index(email_2),
+                        body))
                     ID += 1
                 except:
                     pass
@@ -336,7 +333,6 @@ def write_sentences_in_sqlite(input_, output_):
         # Commit the changes to the database and close the connection
         conn.commit()
         conn.close()
-
 
         # Insert the emails into the table
         for email in emails:
@@ -351,8 +347,14 @@ def write_sentences_in_sqlite(input_, output_):
                 pass
 
         # Commit the changes and close the connection
-        conn.commit()
-        conn.close()
+        try:
+            conn.commit()
+        except:
+            pass
+        try:
+            conn.close()
+        except:
+            pass
         sentence_list = []
         email_ids = []
         ID = 0
@@ -388,28 +390,32 @@ def write_sentences_in_sqlite(input_, output_):
                         sentence_list.append(s.split(",")[9].replace("Sentence:", "").strip())
                 except:
                     pass
-            email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"', '').strip().lower()
-            email_1 = email_1.split(';')[0].strip() if ";" in email_1 else email_1
-            email_2 = sentence.split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()
-            email_2 = email_2.split(';')[0].strip() if ";" in email_2 else email_2
-            subject = sentence.split(",")[14] if len(sentence.split(",")) > 14 else ''
-            body = str(sentence_list).replace("]", "").replace("[", "")
-            email_date = sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]
-            email_time = sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]
-            # Insert the email data into the database
-            cursor.execute(f"""
-            INSERT INTO tbl_email (email_id, email_date, email_time, email_subject, from_id, to_id, body)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-            "EMID" + email_id, email_date, email_time, subject, emails.index(email_1), emails.index(email_2),
-            body))
-            ID += 1
-   
+            try:
+                email_1 = sentence.split(",")[7].replace('"', "").replace("From:", "").replace('"', '').strip().lower()
+                email_1 = email_1.split(';')[0].strip() if ";" in email_1 else email_1
+                email_2 = sentence.split(",")[8].replace('"', "").replace("To:", "").replace('"', '').strip().lower()
+                email_2 = email_2.split(';')[0].strip() if ";" in email_2 else email_2
+                subject = sentence.split(",")[14] if len(sentence.split(",")) > 14 else ''
+                body = str(sentence_list).replace("]", "").replace("[", "")
+                email_date = sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[0]
+                email_time = sentence.split(",")[6].replace('"', "").replace("DateTime:", "").split()[1]
+                # Insert the email data into the database
+                cursor.execute(f"""
+                INSERT INTO tbl_email (email_id, email_date, email_time, email_subject, from_id, to_id, body)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    "EMID" + email_id, email_date, email_time, subject, emails.index(email_1), emails.index(email_2),
+                    body))
+                ID += 1
+            except:
+                pass
+
         # Commit the changes to the database and close the connection
         try:
             conn.commit()
         except:
             conn.close()
+
 
 def communication_streams(output_):
     conn = sqlite3.connect(output_)
@@ -501,43 +507,64 @@ def old_sentence_formatting(_input, _output):
                 pass
             email_num += 1
 
-from collections import Counter
 
 def new_grouping_sentences(_input, _output):
     sen = set()
     counter = Counter()
-    with open(_input, "r", encoding="charmap") as d:
+    with open(_input, "r", encoding="charmap") as d, open(_output, "w", encoding="charmap") as writer:
         data_lines = d.readlines()
         sentences = []
-        for line in data_lines:
-            sentences = []
-            for line_2 in data_lines:
-                if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
-                    if line_2.split(',')[4] not in sen:
-                        try:
-                            sentence = "{},{:.4f},{:.4f},{},{:.4f},{}\n".format(
-                                line_2.split(',')[0],
-                                jaccard_similarity(line.split(',')[4].split(), line_2.split(',')[4].split()),
-                                get_cosine(text_to_vector(line.split(',')[4]), text_to_vector(line_2.split(',')[4])),
-                                pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split()),
-                                euclidean_distance(nlp(line.split(',')[4]).vector, nlp(line_2.split(',')[4]).vector),
-                                line_2)
-                            sentences.append(sentence)
-                            sen.add(line_2.split(',')[4])
-                        except:
-                            pass
+        for i in tqdm(range(len(data_lines))):
+            line = data_lines[i]
+            if line.split(",")[4] not in sen:
+                try:
+                    sentence = "{},{:.4f},{:.4f},{},{:.4f},{}\n".format(
+                        line.split(',')[0],
+                        1.0,
+                        get_cosine(text_to_vector(line.split(',')[4]), text_to_vector(line.split(',')[4])),
+                        0,
+                        euclidean_distance(nlp(line.split(',')[4]).vector, nlp(line.split(',')[4]).vector),
+                        line)
+                    sentences.append(sentence)
+                    sen.add(line.split(',')[4])
+                except:
+                    pass
+
+                for j in range(i + 1, min(i + 501, len(data_lines))):
+                    line_2 = data_lines[j]
+                    if jaccard_similarity(line.split(",")[4].split(), line_2.split(",")[4].split()) > 0.2:
+                        if line_2.split(',')[4] not in sen:
+                            try:
+                                if len(sentences) == 0:
+                                    sentence = "{},{:.4f},{:.4f},{},{:.4f},{}\n".format(
+                                        line_2.split(',')[0],
+                                        1.0,
+                                        get_cosine(text_to_vector(line.split(',')[4]),
+                                                   text_to_vector(line_2.split(',')[4])),
+                                        pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split()),
+                                        euclidean_distance(nlp(line.split(',')[4]).vector,
+                                                           nlp(line_2.split(',')[4]).vector),
+                                        line_2)
+                                else:
+                                    sentence = "{},{:.4f},{:.4f},{},{:.4f},{}\n".format(
+                                        line_2.split(',')[0],
+                                        jaccard_similarity(line.split(',')[4].split(), line_2.split(',')[4].split()),
+                                        get_cosine(text_to_vector(line.split(',')[4]),
+                                                   text_to_vector(line_2.split(',')[4])),
+                                        pylev.levenshtein(line.split(',')[4].split(), line_2.split(',')[4].split()),
+                                        euclidean_distance(nlp(line.split(',')[4]).vector,
+                                                           nlp(line_2.split(',')[4]).vector),
+                                        line_2)
+                                sentences.append(sentence)
+                                sen.add(line_2.split(',')[4])
+                            except:
+                                pass
             if len(sentences) > 1:
                 for sentence in sentences:
-                    with open(_output, "a", encoding="charmap") as writer:
-                        writer.write(sentence)
-                        counter.update({'count': 1})
-                        if counter['count'] % 500 == 0:
-                            print(f"Sentence: {counter['count']}")
-        else:
-            print("grouping_sentences function is done")
-
-            
-            
+                    writer.write(sentence)
+                    counter.update({'count': 1})
+            sentences = []
+    print("grouping_sentences function is done")
 
 
 def final_function(_input, working_file_with_formated_sentences, working_file_sorted_sentences, db_name):
@@ -548,12 +575,13 @@ def final_function(_input, working_file_with_formated_sentences, working_file_so
     print("The new_grouping_sentences function just started")
     new_grouping_sentences(working_file_with_formated_sentences, working_file_sorted_sentences)
     write_sentences_in_sqlite(sentence_in_groups, db_name)
+    print("The communication_streams function just started")
     communication_streams(db_name)
 
 
 data_with_emails = "emails.csv"
 formated_sentence = "formated_sentence.csv"
 sentence_in_groups = "sentence_in_groups.csv"
-db_name = "tables.db"
+db_name = "db_name.db"
 
 final_function(data_with_emails, formated_sentence, sentence_in_groups, db_name)
