@@ -2,6 +2,7 @@
 # I used the project with a facebook account that has no friends, in public groups and despite that sometimes it gave me some error do not forget I am still learning
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
+
 path = "C:\selenium\chromedriver.exe"
 
 
