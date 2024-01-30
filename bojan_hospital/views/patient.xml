@@ -1,0 +1,54 @@
+<odoo>
+
+
+    <record id="bojan_patient_tree" model="ir.ui.view">
+        <field name="name">bojan.patient</field>
+        <field name="model">bojan.patient</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name='name'/>
+                <field name='surename'/>
+                <field name='custom_field'/>
+
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="bojan_patient_form" model="ir.ui.view">
+        <field name="name">bojan.patient.form</field>
+        <field name="model">bojan.patient</field>
+        <field name="arch" type="xml">
+            <form string="Payment Mode">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="surename"/>
+                        <field name='custom_field'/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="bojan_patient_action" model="ir.actions.act_window">
+        <field name="name">Hospital Action</field>
+        <field name="res_model">bojan.patient</field>
+        <field name="view_mode">tree,form,kanban</field>
+    </record>
+
+    <menuitem
+            id="bojan_patient_hospital_menu_item"
+            name="Hospital"
+            sequence="25"
+    />
+    <menuitem
+            id="bojan_patient_patient_menu_item"
+            action="bojan_patient_action"
+            name="Patient"
+            parent="bojan_hospital.bojan_patient_hospital_menu_item"
+            sequence="25"
+    />
+</odoo>
