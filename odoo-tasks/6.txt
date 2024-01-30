@@ -1,0 +1,6 @@
+SELECT EXTRACT(YEAR FROM datum) AS godina, QUARTER(datum) AS kvartal, grad.naziv AS grad, prodavac.naziv AS prodavac, SUM(iznos) AS ukupan_iznos_prodaje
+FROM  promet
+join  prodavac 
+ON promet.prodavac_id = prodavac.id
+GROUP BY  godina, kvartal, grad, prodavac
+---- za ovo nisam siguren :D -------
